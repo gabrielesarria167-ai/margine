@@ -1,0 +1,858 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-01T15:56:18.158Z",
+  "title": "Design System: Margine",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Enamel",
+        "canonical": "oklch(94.4% 0.005 117.9)",
+        "tonalRamp": [
+          "oklch(15% 0.005 117.9)",
+          "oklch(25% 0.005 117.9)",
+          "oklch(35% 0.005 117.9)",
+          "oklch(45% 0.005 117.9)",
+          "oklch(55% 0.005 117.9)",
+          "oklch(65% 0.005 117.9)",
+          "oklch(80% 0.005 117.9)",
+          "oklch(95% 0.005 117.9)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Bright Enamel",
+        "canonical": "oklch(97.8% 0.000 106.5)",
+        "tonalRamp": [
+          "oklch(15% 0.000 106.5)",
+          "oklch(25% 0.000 106.5)",
+          "oklch(35% 0.000 106.5)",
+          "oklch(45% 0.000 106.5)",
+          "oklch(55% 0.000 106.5)",
+          "oklch(65% 0.000 106.5)",
+          "oklch(80% 0.000 106.5)",
+          "oklch(95% 0.000 106.5)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Platform Ink",
+        "canonical": "oklch(21.2% 0.005 248.1)",
+        "tonalRamp": [
+          "oklch(15% 0.005 248.1)",
+          "oklch(25% 0.005 248.1)",
+          "oklch(35% 0.005 248.1)",
+          "oklch(45% 0.005 248.1)",
+          "oklch(55% 0.005 248.1)",
+          "oklch(65% 0.005 248.1)",
+          "oklch(80% 0.005 248.1)",
+          "oklch(95% 0.005 248.1)"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "oklch(49.7% 0.009 164.7)",
+        "tonalRamp": [
+          "oklch(15% 0.009 164.7)",
+          "oklch(25% 0.009 164.7)",
+          "oklch(35% 0.009 164.7)",
+          "oklch(45% 0.009 164.7)",
+          "oklch(55% 0.009 164.7)",
+          "oklch(65% 0.009 164.7)",
+          "oklch(80% 0.009 164.7)",
+          "oklch(95% 0.009 164.7)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(85.4% 0.008 132.4)",
+        "tonalRamp": [
+          "oklch(15% 0.008 132.4)",
+          "oklch(25% 0.008 132.4)",
+          "oklch(35% 0.008 132.4)",
+          "oklch(45% 0.008 132.4)",
+          "oklch(55% 0.008 132.4)",
+          "oklch(65% 0.008 132.4)",
+          "oklch(80% 0.008 132.4)",
+          "oklch(95% 0.008 132.4)"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "canonical": "oklch(74.5% 0.009 145.5)",
+        "tonalRamp": [
+          "oklch(15% 0.009 145.5)",
+          "oklch(25% 0.009 145.5)",
+          "oklch(35% 0.009 145.5)",
+          "oklch(45% 0.009 145.5)",
+          "oklch(55% 0.009 145.5)",
+          "oklch(65% 0.009 145.5)",
+          "oklch(80% 0.009 145.5)",
+          "oklch(95% 0.009 145.5)"
+        ]
+      },
+      "rail": {
+        "role": "neutral",
+        "displayName": "Rail Stone",
+        "canonical": "oklch(30.8% 0.006 258.4)",
+        "tonalRamp": [
+          "oklch(15% 0.006 258.4)",
+          "oklch(25% 0.006 258.4)",
+          "oklch(35% 0.006 258.4)",
+          "oklch(45% 0.006 258.4)",
+          "oklch(55% 0.006 258.4)",
+          "oklch(65% 0.006 258.4)",
+          "oklch(80% 0.006 258.4)",
+          "oklch(95% 0.006 258.4)"
+        ]
+      },
+      "rail-2": {
+        "role": "neutral",
+        "displayName": "Rail Stone Lift",
+        "canonical": "oklch(36.2% 0.007 248.0)",
+        "tonalRamp": [
+          "oklch(15% 0.007 248.0)",
+          "oklch(25% 0.007 248.0)",
+          "oklch(35% 0.007 248.0)",
+          "oklch(45% 0.007 248.0)",
+          "oklch(55% 0.007 248.0)",
+          "oklch(65% 0.007 248.0)",
+          "oklch(80% 0.007 248.0)",
+          "oklch(95% 0.007 248.0)"
+        ]
+      },
+      "rail-ink": {
+        "role": "neutral",
+        "displayName": "Rail Ink",
+        "canonical": "oklch(95.9% 0.005 117.9)",
+        "tonalRamp": [
+          "oklch(15% 0.005 117.9)",
+          "oklch(25% 0.005 117.9)",
+          "oklch(35% 0.005 117.9)",
+          "oklch(45% 0.005 117.9)",
+          "oklch(55% 0.005 117.9)",
+          "oklch(65% 0.005 117.9)",
+          "oklch(80% 0.005 117.9)",
+          "oklch(95% 0.005 117.9)"
+        ]
+      },
+      "rail-ink-soft": {
+        "role": "neutral",
+        "displayName": "Rail Ink Soft",
+        "canonical": "oklch(76.4% 0.009 157.0)",
+        "tonalRamp": [
+          "oklch(15% 0.009 157.0)",
+          "oklch(25% 0.009 157.0)",
+          "oklch(35% 0.009 157.0)",
+          "oklch(45% 0.009 157.0)",
+          "oklch(55% 0.009 157.0)",
+          "oklch(65% 0.009 157.0)",
+          "oklch(80% 0.009 157.0)",
+          "oklch(95% 0.009 157.0)"
+        ]
+      },
+      "protected": {
+        "role": "secondary",
+        "displayName": "Ceppo Stone",
+        "canonical": "oklch(45.1% 0.008 248.0)",
+        "tonalRamp": [
+          "oklch(15% 0.008 248.0)",
+          "oklch(25% 0.008 248.0)",
+          "oklch(35% 0.008 248.0)",
+          "oklch(45% 0.008 248.0)",
+          "oklch(55% 0.008 248.0)",
+          "oklch(65% 0.008 248.0)",
+          "oklch(80% 0.008 248.0)",
+          "oklch(95% 0.008 248.0)"
+        ]
+      },
+      "protected-ink": {
+        "role": "secondary",
+        "displayName": "Ceppo Stone Ink",
+        "canonical": "oklch(95.9% 0.005 117.9)",
+        "tonalRamp": [
+          "oklch(15% 0.005 117.9)",
+          "oklch(25% 0.005 117.9)",
+          "oklch(35% 0.005 117.9)",
+          "oklch(45% 0.005 117.9)",
+          "oklch(55% 0.005 117.9)",
+          "oklch(65% 0.005 117.9)",
+          "oklch(80% 0.005 117.9)",
+          "oklch(95% 0.005 117.9)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Linea Green",
+        "canonical": "oklch(50.9% 0.127 154.5)",
+        "tonalRamp": [
+          "oklch(15% 0.127 154.5)",
+          "oklch(25% 0.127 154.5)",
+          "oklch(35% 0.127 154.5)",
+          "oklch(45% 0.127 154.5)",
+          "oklch(55% 0.127 154.5)",
+          "oklch(65% 0.127 154.5)",
+          "oklch(80% 0.127 154.5)",
+          "oklch(95% 0.127 154.5)"
+        ]
+      },
+      "accent-strong": {
+        "role": "primary",
+        "displayName": "Linea Green Strong",
+        "canonical": "oklch(44.8% 0.112 154.5)",
+        "tonalRamp": [
+          "oklch(15% 0.112 154.5)",
+          "oklch(25% 0.112 154.5)",
+          "oklch(35% 0.112 154.5)",
+          "oklch(45% 0.112 154.5)",
+          "oklch(55% 0.112 154.5)",
+          "oklch(65% 0.112 154.5)",
+          "oklch(80% 0.112 154.5)",
+          "oklch(95% 0.112 154.5)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Linea Green Ink",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(25% 0.000 89.9)",
+          "oklch(35% 0.000 89.9)",
+          "oklch(45% 0.000 89.9)",
+          "oklch(55% 0.000 89.9)",
+          "oklch(65% 0.000 89.9)",
+          "oklch(80% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "accent-wash": {
+        "role": "primary",
+        "displayName": "Linea Green Wash",
+        "canonical": "oklch(91.2% 0.028 158.7)",
+        "tonalRamp": [
+          "oklch(15% 0.028 158.7)",
+          "oklch(25% 0.028 158.7)",
+          "oklch(35% 0.028 158.7)",
+          "oklch(45% 0.028 158.7)",
+          "oklch(55% 0.028 158.7)",
+          "oklch(65% 0.028 158.7)",
+          "oklch(80% 0.028 158.7)",
+          "oklch(95% 0.028 158.7)"
+        ]
+      },
+      "signal": {
+        "role": "tertiary",
+        "displayName": "Signal Red",
+        "canonical": "oklch(54.0% 0.198 28.8)",
+        "tonalRamp": [
+          "oklch(15% 0.160 28.8)",
+          "oklch(25% 0.160 28.8)",
+          "oklch(35% 0.160 28.8)",
+          "oklch(45% 0.160 28.8)",
+          "oklch(55% 0.160 28.8)",
+          "oklch(65% 0.160 28.8)",
+          "oklch(80% 0.160 28.8)",
+          "oklch(95% 0.160 28.8)"
+        ]
+      },
+      "signal-strong": {
+        "role": "tertiary",
+        "displayName": "Signal Red Strong",
+        "canonical": "oklch(47.4% 0.174 28.8)",
+        "tonalRamp": [
+          "oklch(15% 0.160 28.8)",
+          "oklch(25% 0.160 28.8)",
+          "oklch(35% 0.160 28.8)",
+          "oklch(45% 0.160 28.8)",
+          "oklch(55% 0.160 28.8)",
+          "oklch(65% 0.160 28.8)",
+          "oklch(80% 0.160 28.8)",
+          "oklch(95% 0.160 28.8)"
+        ]
+      },
+      "signal-ink": {
+        "role": "tertiary",
+        "displayName": "Signal Red Ink",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "oklch(15% 0.000 89.9)",
+          "oklch(25% 0.000 89.9)",
+          "oklch(35% 0.000 89.9)",
+          "oklch(45% 0.000 89.9)",
+          "oklch(55% 0.000 89.9)",
+          "oklch(65% 0.000 89.9)",
+          "oklch(80% 0.000 89.9)",
+          "oklch(95% 0.000 89.9)"
+        ]
+      },
+      "signal-wash": {
+        "role": "tertiary",
+        "displayName": "Signal Red Wash",
+        "canonical": "oklch(91.4% 0.028 25.9)",
+        "tonalRamp": [
+          "oklch(15% 0.028 25.9)",
+          "oklch(25% 0.028 25.9)",
+          "oklch(35% 0.028 25.9)",
+          "oklch(45% 0.028 25.9)",
+          "oklch(55% 0.028 25.9)",
+          "oklch(65% 0.028 25.9)",
+          "oklch(80% 0.028 25.9)",
+          "oklch(95% 0.028 25.9)"
+        ]
+      },
+      "dark-canvas": {
+        "role": "neutral",
+        "displayName": "Dark Enamel",
+        "canonical": "oklch(23.4% 0.005 248.0)",
+        "tonalRamp": [
+          "oklch(15% 0.005 248.0)",
+          "oklch(25% 0.005 248.0)",
+          "oklch(35% 0.005 248.0)",
+          "oklch(45% 0.005 248.0)",
+          "oklch(55% 0.005 248.0)",
+          "oklch(65% 0.005 248.0)",
+          "oklch(80% 0.005 248.0)",
+          "oklch(95% 0.005 248.0)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Dark Bright Enamel",
+        "canonical": "oklch(27.5% 0.006 236.7)",
+        "tonalRamp": [
+          "oklch(15% 0.006 236.7)",
+          "oklch(25% 0.006 236.7)",
+          "oklch(35% 0.006 236.7)",
+          "oklch(45% 0.006 236.7)",
+          "oklch(55% 0.006 236.7)",
+          "oklch(65% 0.006 236.7)",
+          "oklch(80% 0.006 236.7)",
+          "oklch(95% 0.006 236.7)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Dark Platform Ink",
+        "canonical": "oklch(93.5% 0.005 117.9)",
+        "tonalRamp": [
+          "oklch(15% 0.005 117.9)",
+          "oklch(25% 0.005 117.9)",
+          "oklch(35% 0.005 117.9)",
+          "oklch(45% 0.005 117.9)",
+          "oklch(55% 0.005 117.9)",
+          "oklch(65% 0.005 117.9)",
+          "oklch(80% 0.005 117.9)",
+          "oklch(95% 0.005 117.9)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-ink-soft": {
+        "role": "neutral",
+        "displayName": "Dark Soft Ink",
+        "canonical": "oklch(72.2% 0.010 161.3)",
+        "tonalRamp": [
+          "oklch(15% 0.010 161.3)",
+          "oklch(25% 0.010 161.3)",
+          "oklch(35% 0.010 161.3)",
+          "oklch(45% 0.010 161.3)",
+          "oklch(55% 0.010 161.3)",
+          "oklch(65% 0.010 161.3)",
+          "oklch(80% 0.010 161.3)",
+          "oklch(95% 0.010 161.3)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-rule": {
+        "role": "neutral",
+        "displayName": "Dark Hairline",
+        "canonical": "oklch(33.8% 0.007 229.0)",
+        "tonalRamp": [
+          "oklch(15% 0.007 229.0)",
+          "oklch(25% 0.007 229.0)",
+          "oklch(35% 0.007 229.0)",
+          "oklch(45% 0.007 229.0)",
+          "oklch(55% 0.007 229.0)",
+          "oklch(65% 0.007 229.0)",
+          "oklch(80% 0.007 229.0)",
+          "oklch(95% 0.007 229.0)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-rule-strong": {
+        "role": "neutral",
+        "displayName": "Dark Strong Hairline",
+        "canonical": "oklch(42.8% 0.008 233.8)",
+        "tonalRamp": [
+          "oklch(15% 0.008 233.8)",
+          "oklch(25% 0.008 233.8)",
+          "oklch(35% 0.008 233.8)",
+          "oklch(45% 0.008 233.8)",
+          "oklch(55% 0.008 233.8)",
+          "oklch(65% 0.008 233.8)",
+          "oklch(80% 0.008 233.8)",
+          "oklch(95% 0.008 233.8)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-rail": {
+        "role": "neutral",
+        "displayName": "Dark Rail Stone",
+        "canonical": "oklch(19.4% 0.000 229.0)",
+        "tonalRamp": [
+          "oklch(15% 0.000 229.0)",
+          "oklch(25% 0.000 229.0)",
+          "oklch(35% 0.000 229.0)",
+          "oklch(45% 0.000 229.0)",
+          "oklch(55% 0.000 229.0)",
+          "oklch(65% 0.000 229.0)",
+          "oklch(80% 0.000 229.0)",
+          "oklch(95% 0.000 229.0)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-rail-2": {
+        "role": "neutral",
+        "displayName": "Dark Rail Stone Lift",
+        "canonical": "oklch(26.6% 0.006 236.8)",
+        "tonalRamp": [
+          "oklch(15% 0.006 236.8)",
+          "oklch(25% 0.006 236.8)",
+          "oklch(35% 0.006 236.8)",
+          "oklch(45% 0.006 236.8)",
+          "oklch(55% 0.006 236.8)",
+          "oklch(65% 0.006 236.8)",
+          "oklch(80% 0.006 236.8)",
+          "oklch(95% 0.006 236.8)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-rail-ink-soft": {
+        "role": "neutral",
+        "displayName": "Dark Rail Ink Soft",
+        "canonical": "oklch(68.9% 0.010 161.2)",
+        "tonalRamp": [
+          "oklch(15% 0.010 161.2)",
+          "oklch(25% 0.010 161.2)",
+          "oklch(35% 0.010 161.2)",
+          "oklch(45% 0.010 161.2)",
+          "oklch(55% 0.010 161.2)",
+          "oklch(65% 0.010 161.2)",
+          "oklch(80% 0.010 161.2)",
+          "oklch(95% 0.010 161.2)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-protected": {
+        "role": "secondary",
+        "displayName": "Dark Ceppo Stone",
+        "canonical": "oklch(41.0% 0.007 240.0)",
+        "tonalRamp": [
+          "oklch(15% 0.007 240.0)",
+          "oklch(25% 0.007 240.0)",
+          "oklch(35% 0.007 240.0)",
+          "oklch(45% 0.007 240.0)",
+          "oklch(55% 0.007 240.0)",
+          "oklch(65% 0.007 240.0)",
+          "oklch(80% 0.007 240.0)",
+          "oklch(95% 0.007 240.0)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-accent": {
+        "role": "primary",
+        "displayName": "Dark Linea Green",
+        "canonical": "oklch(70.7% 0.146 156.5)",
+        "tonalRamp": [
+          "oklch(15% 0.146 156.5)",
+          "oklch(25% 0.146 156.5)",
+          "oklch(35% 0.146 156.5)",
+          "oklch(45% 0.146 156.5)",
+          "oklch(55% 0.146 156.5)",
+          "oklch(65% 0.146 156.5)",
+          "oklch(80% 0.146 156.5)",
+          "oklch(95% 0.146 156.5)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-accent-strong": {
+        "role": "primary",
+        "displayName": "Dark Linea Green Strong",
+        "canonical": "oklch(76.2% 0.133 158.1)",
+        "tonalRamp": [
+          "oklch(15% 0.133 158.1)",
+          "oklch(25% 0.133 158.1)",
+          "oklch(35% 0.133 158.1)",
+          "oklch(45% 0.133 158.1)",
+          "oklch(55% 0.133 158.1)",
+          "oklch(65% 0.133 158.1)",
+          "oklch(80% 0.133 158.1)",
+          "oklch(95% 0.133 158.1)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-accent-ink": {
+        "role": "primary",
+        "displayName": "Dark Linea Green Ink",
+        "canonical": "oklch(17.7% 0.023 157.7)",
+        "tonalRamp": [
+          "oklch(15% 0.023 157.7)",
+          "oklch(25% 0.023 157.7)",
+          "oklch(35% 0.023 157.7)",
+          "oklch(45% 0.023 157.7)",
+          "oklch(55% 0.023 157.7)",
+          "oklch(65% 0.023 157.7)",
+          "oklch(80% 0.023 157.7)",
+          "oklch(95% 0.023 157.7)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-accent-wash": {
+        "role": "primary",
+        "displayName": "Dark Linea Green Wash",
+        "canonical": "oklch(32.1% 0.045 157.6)",
+        "tonalRamp": [
+          "oklch(15% 0.045 157.6)",
+          "oklch(25% 0.045 157.6)",
+          "oklch(35% 0.045 157.6)",
+          "oklch(45% 0.045 157.6)",
+          "oklch(55% 0.045 157.6)",
+          "oklch(65% 0.045 157.6)",
+          "oklch(80% 0.045 157.6)",
+          "oklch(95% 0.045 157.6)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-signal": {
+        "role": "tertiary",
+        "displayName": "Dark Signal Red",
+        "canonical": "oklch(67.8% 0.175 26.8)",
+        "tonalRamp": [
+          "oklch(15% 0.160 26.8)",
+          "oklch(25% 0.160 26.8)",
+          "oklch(35% 0.160 26.8)",
+          "oklch(45% 0.160 26.8)",
+          "oklch(55% 0.160 26.8)",
+          "oklch(65% 0.160 26.8)",
+          "oklch(80% 0.160 26.8)",
+          "oklch(95% 0.160 26.8)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-signal-strong": {
+        "role": "tertiary",
+        "displayName": "Dark Signal Red Strong",
+        "canonical": "oklch(73.5% 0.141 25.2)",
+        "tonalRamp": [
+          "oklch(15% 0.141 25.2)",
+          "oklch(25% 0.141 25.2)",
+          "oklch(35% 0.141 25.2)",
+          "oklch(45% 0.141 25.2)",
+          "oklch(55% 0.141 25.2)",
+          "oklch(65% 0.141 25.2)",
+          "oklch(80% 0.141 25.2)",
+          "oklch(95% 0.141 25.2)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-signal-ink": {
+        "role": "tertiary",
+        "displayName": "Dark Signal Red Ink",
+        "canonical": "oklch(17.2% 0.027 24.3)",
+        "tonalRamp": [
+          "oklch(15% 0.027 24.3)",
+          "oklch(25% 0.027 24.3)",
+          "oklch(35% 0.027 24.3)",
+          "oklch(45% 0.027 24.3)",
+          "oklch(55% 0.027 24.3)",
+          "oklch(65% 0.027 24.3)",
+          "oklch(80% 0.027 24.3)",
+          "oklch(95% 0.027 24.3)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "dark-signal-wash": {
+        "role": "tertiary",
+        "displayName": "Dark Signal Red Wash",
+        "canonical": "oklch(28.7% 0.042 24.6)",
+        "tonalRamp": [
+          "oklch(15% 0.042 24.6)",
+          "oklch(25% 0.042 24.6)",
+          "oklch(35% 0.042 24.6)",
+          "oklch(45% 0.042 24.6)",
+          "oklch(55% 0.042 24.6)",
+          "oklch(65% 0.042 24.6)",
+          "oklch(80% 0.042 24.6)",
+          "oklch(95% 0.042 24.6)"
+        ],
+        "mode": "dark (prefers-color-scheme)"
+      },
+      "signal-on-stone": {
+        "role": "tertiary",
+        "displayName": "Signal On Stone",
+        "canonical": "oklch(91.4% 0.028 25.9)",
+        "tonalRamp": [
+          "oklch(15% 0.028 25.9)",
+          "oklch(25% 0.028 25.9)",
+          "oklch(35% 0.028 25.9)",
+          "oklch(45% 0.028 25.9)",
+          "oklch(55% 0.028 25.9)",
+          "oklch(65% 0.028 25.9)",
+          "oklch(80% 0.028 25.9)",
+          "oklch(95% 0.028 25.9)"
+        ]
+      },
+      "dark-signal-on-stone": {
+        "role": "tertiary",
+        "displayName": "Signal On Stone (dark)",
+        "canonical": "oklch(87.5% 0.054 25.3)",
+        "tonalRamp": [
+          "oklch(15% 0.054 25.3)",
+          "oklch(25% 0.054 25.3)",
+          "oklch(35% 0.054 25.3)",
+          "oklch(45% 0.054 25.3)",
+          "oklch(55% 0.054 25.3)",
+          "oklch(65% 0.054 25.3)",
+          "oklch(80% 0.054 25.3)",
+          "oklch(95% 0.054 25.3)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The one hero figure per view (Denaro spendibile, Risparmio protetto); 4.25rem under 900px of main width."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "View titles and the savings goal figure."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section headings; sheet titles step up to 1.5rem."
+      },
+      "signage-amount": {
+        "displayName": "Signage Amount",
+        "purpose": "Amounts inside the fascia; 1.25rem when a stretch is tight."
+      },
+      "signage-label": {
+        "displayName": "Signage Label",
+        "purpose": "Uppercase name on each fascia stretch and table column headers only."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default UI text and table cells."
+      },
+      "body-lg": {
+        "displayName": "Body Large",
+        "purpose": "Prose (62ch), answer notes (52ch), inputs, table amounts at 600."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, legends, small headings above figures."
+      }
+    },
+    "shadows": [
+      {
+        "name": "sheet",
+        "value": "-16px 0 40px -16px rgb(23 25 27 / 0.32)",
+        "dark": "-16px 0 40px -16px rgb(0 0 0 / 0.6)",
+        "purpose": "Right-hand form sheet casting over content."
+      },
+      {
+        "name": "toast",
+        "value": "0 2px 4px rgb(23 25 27 / 0.08), 0 12px 28px -10px rgb(23 25 27 / 0.35)",
+        "dark": "0 2px 4px rgb(0 0 0 / 0.3), 0 12px 28px -10px rgb(0 0 0 / 0.7)",
+        "purpose": "Confirmation toast."
+      },
+      {
+        "name": "focus-halo",
+        "value": "0 0 0 3px var(--accent-wash)",
+        "purpose": "Input focus; signal-wash when invalid."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "The single easing curve for every transition."
+      },
+      {
+        "name": "state",
+        "value": "150ms",
+        "purpose": "Colour and border changes on hover and focus."
+      },
+      {
+        "name": "press",
+        "value": "100ms",
+        "purpose": "Button active nudge (translateY 1px)."
+      },
+      {
+        "name": "fascia-and-overlay",
+        "value": "200ms",
+        "purpose": "Fascia clip-path and stop marker, sheet slide (24px), toast rise (8px). Dropped under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "main-narrow",
+        "value": "900px",
+        "purpose": "Container query on main: dashboard answer and goal state stack."
+      },
+      {
+        "name": "segment-amount-only",
+        "value": "84px",
+        "purpose": "Container query on a fascia segment: label hides."
+      },
+      {
+        "name": "segment-hidden",
+        "value": "56px",
+        "purpose": "Container query on a fascia segment: amount hides."
+      },
+      {
+        "name": "min-window",
+        "value": "960x640",
+        "purpose": "Minimum Electron window."
+      }
+    ],
+    "layout": {
+      "railWidth": "232px",
+      "fasciaHeight": "64px",
+      "viewMaxWidth": "1120px",
+      "mainPadding": "40px 48px 64px",
+      "goalColumn": "300px",
+      "sheetWidth": "440px"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled action per context: Nuova spesa, sheet submit.",
+      "html": "<button class=\"ds-btn ds-btn-primary\"><svg class=\"ds-icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg>Nuova spesa</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border: 1px solid var(--rule-strong, #A9AEA9); border-radius: 4px; background: transparent; color: var(--ink, #17191B); font: 600 0.875rem/1.5 Archivo, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23,1,0.32,1), border-color 150ms cubic-bezier(0.23,1,0.32,1), transform 100ms cubic-bezier(0.23,1,0.32,1); } .ds-icon { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; } .ds-btn-primary { background: var(--accent, #007A43); border-color: var(--accent, #007A43); color: var(--accent-ink, #FFFFFF); } .ds-btn-primary:hover { background: var(--accent-strong, #006637); border-color: var(--accent-strong, #006637); } .ds-btn:active { transform: translateY(1px); } .ds-btn:focus-visible { outline: 2px solid var(--accent, #007A43); outline-offset: 2px; } .ds-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }"
+    },
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Default outlined action.",
+      "html": "<button class=\"ds-btn-outline\">Trasferimento</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border: 1px solid var(--rule-strong, #A9AEA9); border-radius: 4px; background: transparent; color: var(--ink, #17191B); font: 600 0.875rem/1.5 Archivo, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23,1,0.32,1), border-color 150ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-outline:hover { background: color-mix(in oklab, var(--ink, #17191B) 6%, transparent); border-color: var(--ink-soft, #5E6461); } .ds-btn-outline:active { transform: translateY(1px); } .ds-btn-outline:focus-visible { outline: 2px solid var(--accent, #007A43); outline-offset: 2px; } .ds-btn-outline:disabled { opacity: 0.45; cursor: not-allowed; }"
+    },
+    {
+      "name": "Signal Button",
+      "kind": "button",
+      "refersTo": "button-signal",
+      "description": "Continue into or confirm an exception. Never a generic destructive action.",
+      "html": "<button class=\"ds-btn-signal\">Continua con l'eccezione</button>",
+      "css": ".ds-btn-signal { height: 38px; padding: 0 16px; border: 1px solid var(--signal, #C8261E); border-radius: 4px; background: var(--signal, #C8261E); color: var(--signal-ink, #FFFFFF); font: 600 0.875rem/1.5 Archivo, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-signal:hover { background: var(--signal-strong, #A81E17); border-color: var(--signal-strong, #A81E17); } .ds-btn-signal:active { transform: translateY(1px); } .ds-btn-signal:focus-visible { outline: 2px solid var(--accent, #007A43); outline-offset: 2px; }"
+    },
+    {
+      "name": "Money Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Euro amount field with inset currency sign; focus draws the accent halo.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Importo</span><span class=\"ds-money\"><input class=\"ds-input\" inputmode=\"decimal\" value=\"100\"></span></label>",
+      "css": ".ds-field { display: grid; gap: 6px; font-family: Archivo, system-ui, sans-serif; } .ds-label { font-size: 0.8125rem; font-weight: 600; color: var(--ink, #17191B); } .ds-money { position: relative; display: block; } .ds-money::before { content: '€'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-soft, #5E6461); font-size: 1rem; } .ds-input { width: 100%; height: 40px; padding: 0 12px 0 30px; border: 1px solid var(--rule-strong, #A9AEA9); border-radius: 4px; background: var(--surface, #F8F8F5); color: var(--ink, #17191B); font: 600 1rem Archivo, system-ui, sans-serif; font-variant-numeric: tabular-nums; transition: border-color 150ms cubic-bezier(0.23,1,0.32,1), box-shadow 150ms cubic-bezier(0.23,1,0.32,1); } .ds-input:hover { border-color: var(--ink-soft, #5E6461); } .ds-input:focus { outline: none; border-color: var(--accent, #007A43); box-shadow: 0 0 0 3px var(--accent-wash, #D3E8DB); } .ds-input[aria-invalid='true'] { border-color: var(--signal, #C8261E); }"
+    },
+    {
+      "name": "Rail Navigation",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Stone rail with stroked icons; active item fills rail-2 with a green icon.",
+      "html": "<nav class=\"ds-rail\"><a href=\"#\" class=\"ds-nav\" aria-current=\"page\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\"><rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/></svg>Dashboard</a><a href=\"#\" class=\"ds-nav\"><svg class=\"ds-nav-icon\" viewBox=\"0 0 24 24\"><path d=\"M8 3 4 7l4 4\"/><path d=\"M4 7h16\"/><path d=\"m16 21 4-4-4-4\"/><path d=\"M20 17H4\"/></svg>Transazioni</a></nav>",
+      "css": ".ds-rail { display: flex; flex-direction: column; gap: 2px; width: 232px; padding: 12px; background: var(--rail, #2E3033); font-family: Archivo, system-ui, sans-serif; font-size: 0.875rem; } .ds-nav { display: flex; align-items: center; gap: 12px; height: 38px; padding: 0 12px; border-radius: 4px; color: var(--rail-ink-soft, #AEB4B0); text-decoration: none; font-weight: 500; transition: background-color 150ms cubic-bezier(0.23,1,0.32,1), color 150ms cubic-bezier(0.23,1,0.32,1); } .ds-nav:hover { background: var(--rail-2, #3B3E41); color: var(--rail-ink, #F1F2EE); } .ds-nav:active { transform: translateY(1px); } .ds-nav:focus-visible { outline: 2px solid var(--accent, #007A43); outline-offset: 2px; } .ds-nav[aria-current='page'] { background: var(--rail-2, #3B3E41); color: var(--rail-ink, #F1F2EE); font-weight: 650; } .ds-nav-icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; } .ds-nav[aria-current='page'] .ds-nav-icon { color: var(--accent, #007A43); }"
+    },
+    {
+      "name": "La Fascia",
+      "kind": "custom",
+      "refersTo": "fascia-protected",
+      "description": "Signature band: stretches sized to amounts, one label and one amount each; a typed expense cuts it from the right and any crossing into stone turns red.",
+      "html": "<div class=\"ds-fascia\"><div class=\"ds-seg ds-seg-protected\" style=\"width:76%\"><span class=\"ds-seg-label\">Protetto</span><span class=\"ds-seg-amount\">500,00 €</span></div><div class=\"ds-seg ds-seg-cross\" style=\"width:14%\"><span class=\"ds-seg-label\">Dal risparmio</span><span class=\"ds-seg-amount\">−80,00 €</span></div><div class=\"ds-mark\"></div><div class=\"ds-seg ds-seg-spendable\" style=\"width:10%\"><span class=\"ds-seg-label\">Spendibile</span><span class=\"ds-seg-amount\">70,00 €</span></div></div>",
+      "css": ".ds-fascia { position: relative; display: flex; height: 64px; overflow: hidden; background: var(--canvas, #ECEDE9); border-bottom: 1px solid var(--rule, #CDD0CB); font-family: Archivo, system-ui, sans-serif; font-variant-numeric: tabular-nums; } .ds-seg { display: flex; flex-direction: column; justify-content: center; padding: 0 20px; white-space: nowrap; overflow: hidden; } .ds-seg-protected { background: var(--protected, #52565A); color: var(--protected-ink, #F1F2EE); } .ds-seg-spendable { background: var(--accent, #007A43); color: var(--accent-ink, #FFFFFF); } .ds-seg-cross { background: var(--signal, #C8261E); color: var(--signal-ink, #FFFFFF); padding: 0 16px; } .ds-seg-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.3; } .ds-seg-amount { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; } .ds-mark { flex: none; width: 8px; background: var(--ink, #17191B); border-inline: 2px solid var(--canvas, #ECEDE9); transition: transform 200ms cubic-bezier(0.23,1,0.32,1); }"
+    },
+    {
+      "name": "Stations Row",
+      "kind": "custom",
+      "refersTo": "body",
+      "description": "One ruled row of figures separated by vertical hairlines, instead of stat cards.",
+      "html": "<dl class=\"ds-stations\"><div><dt>Patrimonio effettivo</dt><dd>570,00 €</dd></div><div><dt>Contanti</dt><dd>150,00 €</dd></div><div><dt>Conto bancario</dt><dd>420,00 €</dd></div></dl>",
+      "css": ".ds-stations { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 0; border-top: 1px solid var(--rule, #CDD0CB); border-bottom: 1px solid var(--rule, #CDD0CB); font-family: Archivo, system-ui, sans-serif; font-variant-numeric: tabular-nums; } .ds-stations > div { padding: 16px 20px 16px 0; } .ds-stations > div + div { padding-left: 20px; border-left: 1px solid var(--rule, #CDD0CB); } .ds-stations dt { color: var(--ink-soft, #5E6461); font-size: 0.8125rem; } .ds-stations dd { margin: 4px 0 0; font-size: 1.25rem; font-weight: 650; letter-spacing: -0.01em; color: var(--ink, #17191B); }"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Rail-coloured confirmation with a green check; rises 8px over 200ms.",
+      "html": "<div class=\"ds-toast\"><svg class=\"ds-toast-icon\" viewBox=\"0 0 24 24\"><path d=\"M20 6 9 17l-5-5\"/></svg>Spesa registrata.</div>",
+      "css": ".ds-toast { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 4px; background: var(--rail, #2E3033); color: var(--rail-ink, #F1F2EE); box-shadow: 0 2px 4px rgb(23 25 27 / 0.08), 0 12px 28px -10px rgb(23 25 27 / 0.35); font: 550 0.875rem Archivo, system-ui, sans-serif; } .ds-toast-icon { width: 18px; height: 18px; stroke: var(--accent, #007A43); fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "La Fascia",
+    "overview": "Margine is drawn like a Milan Metropolitana platform: a dark stone rail on the left, enamel panels for content, and one continuous band of colour at eye level across the top that tells the user, in two stretches, what is protected and what is spendable. The band is to scale. Its stone stretch is Risparmio protetto, its line-green stretch is Denaro spendibile, and each stretch carries exactly one message: a small uppercase label over a large signage amount. Everything else on screen is quieter than the band.\n\nThe system is a working desk tool, not a showcase. Density is moderate, structure comes from hairline rules and ruled rows rather than cards, and there is one grotesque (Archivo) set with tabular figures everywhere. Colour is committed and sparse: stone and green carry meaning, red appears only for an exception or a deficit, and everything else is enamel, ink and tinted grey. A system-dark variant swaps every token through `prefers-color-scheme` while keeping the same roles.\n\nRejected by the build: three equal stat cards and a donut as the dashboard answer; cards as structural containers; a second type family.",
+    "keyCharacteristics": [
+      "One full-width signage band (64px) holds the money state, segments sized to amounts.",
+      "Stone rail, enamel ground, ink text; one accent green; signal red reserved for exception and deficit.",
+      "Archivo only, tabular numerals on every amount, tracking tightens as size grows.",
+      "Hairline rules and ruled rows instead of cards; square-ish 4px corners.",
+      "Motion is short (100 to 200ms), on transform, opacity and clip-path, with one ease-out curve."
+    ],
+    "rules": [
+      {
+        "name": "The Two Stretches Rule",
+        "body": "Stone means protected and green means spendable, everywhere. Neither colour is used for anything that could be read as the other's money.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Means Exception Rule",
+        "body": "Signal red appears only when protected money is touched or the goal is in deficit. It is never decoration, never a generic destructive colour, never a second accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Enamel Not Black Rule",
+        "body": "Text is Platform Ink, surfaces are tinted enamel; no pure black or pure white grounds.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tight At Size Rule",
+        "body": "Letter-spacing tightens as size grows: -0.035em at display, -0.02em at headline, -0.01em at title, normal at body; only the small uppercase signage label opens up (+0.04em).",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Everything Rule",
+        "body": "Every amount uses tabular numerals; the body sets `tnum` globally.",
+        "section": "typography"
+      },
+      {
+        "name": "The Only Overlays Float Rule",
+        "body": "A shadow means the element sits above the page (sheet, toast). Nothing at rest in the page flow carries a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the fascia as the first thing on every view and give each stretch exactly one label and one amount.",
+      "Do use stone only for protected money and Linea Green only for spendable money, primary actions, income and focus.",
+      "Do set every amount in Archivo with tabular numerals, tightening tracking as size grows (-0.035em at 5.5rem).",
+      "Do build structure from hairline rules (1px rule, rule-strong for control borders) and ruled rows.",
+      "Do keep motion at 100 to 200ms on transform, opacity or clip-path with `cubic-bezier(0.23, 1, 0.32, 1)`, and drop it under reduced motion.",
+      "Do give every control hover, focus-visible, active and disabled states.",
+      "Do open forms in the right-hand sheet below the fascia so the band can preview the change live."
+    ],
+    "donts": [
+      "Don't answer \"how much can I spend\" with stat cards or a donut; the band and one hero figure carry it.",
+      "Don't use Signal Red for anything other than exceptions and deficits.",
+      "Don't add a second type family or use pure black.",
+      "Don't put shadows on in-flow elements; only the sheet and toast float.",
+      "Don't wrap content sections in cards or rounded panels.",
+      "Don't use uppercase outside the fascia labels and table column headers."
+    ]
+  }
+}

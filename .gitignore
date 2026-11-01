@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.DS_Store
+.impeccable/review/
+.impeccable/config.local.json
+.impeccable/questions/

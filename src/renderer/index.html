@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'">
+  <title>Margine</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div class="app">
+    <nav class="rail" aria-label="Sezioni"></nav>
+    <div class="content">
+      <div class="fascia"></div>
+      <main tabindex="-1"></main>
+    </div>
+  </div>
+  <dialog id="sheet" class="sheet" aria-labelledby="sheet-title"></dialog>
+  <div class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

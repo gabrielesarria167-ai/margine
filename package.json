@@ -1,0 +1,47 @@
+{
+  "name": "margine",
+  "productName": "Margine",
+  "version": "0.1.0",
+  "description": "Personal Finance Tracker",
+  "type": "module",
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test --no-warnings=ExperimentalWarning test/*.test.js",
+    "dist": "electron-builder --mac",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^45.2.1",
+    "electron-builder": "^26.18.0"
+  },
+  "author": "Gabriele Sarria",
+  "build": {
+    "appId": "app.margine.desktop",
+    "productName": "Margine",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "category": "public.app-category.finance",
+      "identity": null
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
