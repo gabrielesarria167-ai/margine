@@ -187,7 +187,7 @@ Margine is drawn like a Milan Metropolitana platform: a dark stone rail on the l
 
 The system is a working desk tool, not a showcase. Density is moderate, structure comes from hairline rules and ruled rows rather than cards, and there is one grotesque (Archivo) set with tabular figures everywhere. Colour is committed and sparse: stone and green carry meaning, red appears only for an exception or a deficit, and everything else is enamel, ink and tinted grey. A system-dark variant swaps every token through `prefers-color-scheme` while keeping the same roles.
 
-Rejected by the build: three equal stat cards and a donut as the dashboard answer; cards as structural containers; a second type family.
+Rejected by the build: three equal stat cards and a donut as the answer to "how much can I spend" (pies appear only in the category rankings below); cards as structural containers; a second type family.
 
 **Key Characteristics:**
 - One full-width signage band (64px) holds the money state, segments sized to amounts.
@@ -220,7 +220,7 @@ A metro-signage palette: warm-grey enamel and stone, one line-green, one signal 
 ### Named Rules
 **The Two Stretches Rule.** Stone means protected and green means spendable, everywhere. Neither colour is used for anything that could be read as the other's money.
 
-**The Red Means Exception Rule.** Signal red appears only when protected money is touched or the goal is in deficit. It is never decoration, never a generic destructive colour, never a second accent.
+**The Red Means Exception Rule.** Signal red appears only when protected money is touched or the goal is in deficit. It is never decoration, never a generic destructive colour, never a second accent. One chosen exception on the dashboard: the expense pie in "Dove vanno" uses a red ramp, and the all-time balance chart turns red when its trend falls (green when it rises).
 
 **The Enamel Not Black Rule.** Text is Platform Ink, surfaces are tinted enamel; no pure black or pure white grounds.
 

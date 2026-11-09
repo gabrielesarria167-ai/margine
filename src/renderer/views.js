@@ -1,4 +1,5 @@
-import { formatEuro, parseEuro, totals, ACCOUNT_KINDS } from '../ledger.js';
+import { formatEuro, parseEuro, totals, todayISO, ACCOUNT_KINDS, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../ledger.js';
+import { dailyBalance, trendLine, byCategory, niceStep } from '../stats.js';
 import { html } from './html.js';
 import { icon } from './icons.js';
 import { call, refresh, toast, fmtDay, fmtDayYear, fmtStamp } from './store.js';
@@ -62,6 +63,125 @@ function statusSentence(t) {
   return html`<strong>${formatEuro(t.S)}</strong> restano protetti, fuori dalle spese ordinarie.`;
 }
 
+// ---------- dashboard: da sempre ----------
+
+const wholeEuro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0, useGrouping: 'always' });
+const monthFmt = new Intl.DateTimeFormat('it-IT', { month: 'short', timeZone: 'UTC' });
+const signedEuro = (c) => `${c > 0 ? '+' : c < 0 ? '−' : ''}${formatEuro(Math.abs(c))}`;
+// Slice shades step by lightness, biggest category darkest: green for income, red for expenses.
+// shortcut: categories past the last shade all share the lightest one; add shades if people keep more than that.
+const GREENS = ['#00502C', '#007A43', '#4FA57A', '#9FCFB4', '#C9E3D3'];
+const REDS = ['#6E130E', '#9A1C15', '#C8261E', '#DB4F47', '#E7807A', '#F0AEA9', '#F6D3D0'];
+
+// Patrimonio day by day with its trend line: green area when the trend rises, red when it falls.
+function balanceChart(series) {
+  if (series.length < 2) return html`<p class="chart-note">Il grafico compare dal secondo giorno con dei movimenti.</p>`;
+  const values = series.map((p) => p.cents);
+  const n = values.length;
+  const max = Math.max(...values, 100);
+  const step = niceStep(max / 3);
+  const top = step * Math.ceil(max / step);
+  const X = (i) => (i / (n - 1) * 1000).toFixed(1);
+  const Y = (v) => (240 - v / top * 240).toFixed(1);
+  const line = `M${values.map((v, i) => `${X(i)},${Y(v)}`).join('L')}`;
+  const { start, slope } = trendLine(values);
+  const perMonth = Math.round(slope * 30.44);
+  const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, k) => k * step);
+  let months = series.map((p, i) => [p.date, i]).filter(([d, i]) => i > 0 && d.endsWith('-01'));
+  const every = Math.ceil(months.length / 12); // keep month labels readable over long histories
+  months = months.filter((_, k) => k % every === 0);
+  const pct = (i) => `${(i / (n - 1) * 100).toFixed(2)}%`;
+  return html`
+    <div class="chart ${slope >= 0 ? 'chart--up' : 'chart--down'}">
+      <div class="chart-legend">
+        <span><span class="key-area" aria-hidden="true"></span>Patrimonio, giorno per giorno</span>
+        <span><span class="key-trend" aria-hidden="true"></span>Tendenza: ${perMonth >= 0 ? '+' : '−'}${formatEuro(Math.abs(perMonth))} al mese</span>
+      </div>
+      <div class="chart-scroll"><div class="chart-plot">
+        <div class="chart-box">
+          <svg viewBox="0 0 1000 240" preserveAspectRatio="none" role="img"
+            aria-label="Patrimonio dal ${fmtDayYear(series[0].date)} a oggi: da ${formatEuro(values[0])} a ${formatEuro(values[n - 1])}, tendenza ${signedEuro(perMonth)} al mese">
+            <path class="chart-grid" d="${ticks.slice(1).map((t) => `M0,${Y(t)}H1000`).join('')}"></path>
+            <path class="chart-months" d="${months.map(([, i]) => `M${X(i)},0V240`).join('')}"></path>
+            <path class="chart-area" d="${line}L1000,240L0,240Z"></path>
+            <path class="chart-line" d="${line}"></path>
+            <path class="chart-trend" d="M0,${Y(start)}L1000,${Y(start + slope * (n - 1))}"></path>
+          </svg>
+        </div>
+        <div class="chart-y" aria-hidden="true">${ticks.map((t) => html`<span data-style="top: ${Y(t) / 2.4}%">${wholeEuro.format(t / 100)}</span>`)}</div>
+        <div class="chart-x" aria-hidden="true">${months.map(([d, i]) => html`<span data-style="left: ${pct(i)}">${monthFmt.format(new Date(`${d}T00:00:00Z`))}</span>`)}</div>
+      </div></div>
+    </div>`;
+}
+
+function ranking({ id, title, sub, lead, of, rows, ramp, builtIn, income, empty }) {
+  const total = rows.reduce((a, r) => a + r.cents, 0);
+  if (!total) return html`<section class="ranking" aria-labelledby="${id}"><h2 id="${id}">${title}</h2><div class="empty"><p>${empty}</p></div></section>`;
+  let deg = 0;
+  const slices = rows.map((r, i) => {
+    const a = deg;
+    deg += r.cents / total * 360;
+    return { ...r, color: ramp[Math.min(i, ramp.length - 1)], a, b: deg, share: r.cents / total * 100 };
+  });
+  // 1deg of canvas between slices keeps neighbours apart; a single slice gets none.
+  const pie = slices.length === 1 ? slices[0].color : `conic-gradient(${slices.map((x) =>
+    `${x.color} ${x.a.toFixed(2)}deg ${(x.b - 1).toFixed(2)}deg, var(--canvas) ${(x.b - 1).toFixed(2)}deg ${x.b.toFixed(2)}deg`).join(', ')})`;
+  const pctOf = (x) => `${Math.round(x.share)}%`;
+  return html`
+    <section class="ranking" aria-labelledby="${id}">
+      <h2 id="${id}">${title}</h2>
+      <p class="muted">${sub}</p>
+      <div class="rank-head">
+        <div class="pie" role="img" aria-label="${title}: ${slices.map((x) => `${x.name} ${pctOf(x)}`).join(', ')}" data-style="background: ${pie}"></div>
+        <div class="rank-lead">
+          <p class="label">${lead}</p>
+          <p class="name">${slices[0].name}</p>
+          <p class="muted">${pctOf(slices[0])} di tutte le ${of}</p>
+        </div>
+      </div>
+      <table class="table rank">
+        <thead><tr><th scope="col">Categoria</th><th scope="col">Quota</th><th scope="col" class="pct">%</th><th scope="col">Importo</th></tr></thead>
+        <tbody>${slices.map((x) => html`<tr>
+          <td>
+            <div class="desc"><span class="swatch" aria-hidden="true" data-style="background: ${x.color}"></span>${x.name}${builtIn.includes(x.name) ? '' : html`<span class="tag">personale</span>`}</div>
+            <p class="desc-sub">${x.count} ${x.count === 1 ? 'movimento' : 'movimenti'}</p>
+          </td>
+          <td class="bar-cell"><span class="rank-bar ${income ? 'rank-bar--in' : ''}"><span data-style="width: ${x.share.toFixed(1)}%"></span></span></td>
+          <td class="pct">${pctOf(x)}</td>
+          <td class="amt ${income ? 'amt--in' : ''}">${formatEuro(x.cents)}</td>
+        </tr>`)}</tbody>
+      </table>
+    </section>`;
+}
+
+function allTime(s) {
+  const incomes = byCategory(s.transactions, 'income');
+  const expenses = byCategory(s.transactions, 'expense');
+  const sum = (rows) => rows.reduce((a, r) => a + r.cents, 0);
+  const count = (rows) => rows.reduce((a, r) => a + r.count, 0);
+  const tin = sum(incomes), tout = sum(expenses), net = tin - tout;
+  const series = dailyBalance(s.transactions, todayISO());
+  const kept = !tin ? '' : net >= 0 ? `Hai tenuto il ${Math.round(net / tin * 100)}% di ciò che è entrato` : 'Hai speso più di quanto è entrato';
+  const movimenti = (c) => `${c} ${c === 1 ? 'movimento' : 'movimenti'}`;
+  return html`
+    <section class="section" aria-labelledby="dasempre">
+      <h2 id="dasempre">Da sempre</h2>
+      ${series.length ? html`<p class="muted">Dal ${fmtDayYear(series[0].date)}, il primo movimento registrato. Saldi iniziali e rettifiche contano nel patrimonio, non tra entrate e uscite.</p>` : ''}
+      <dl class="figures">
+        <div><dt>Entrate</dt><dd class="is-in">${formatEuro(tin)}</dd><dd class="note">${movimenti(count(incomes))}</dd></div>
+        <div><dt>Uscite</dt><dd>${formatEuro(tout)}</dd><dd class="note">${movimenti(count(expenses))}</dd></div>
+        <div><dt>Risultato netto</dt><dd>${signedEuro(net)}</dd>${kept ? html`<dd class="note">${kept}</dd>` : ''}</div>
+      </dl>
+      ${balanceChart(series)}
+    </section>
+    <div class="section rankings">
+      ${ranking({ id: 'arrivano', title: 'Da dove arrivano', sub: 'Entrate per categoria, da sempre.', lead: 'Prima fonte', of: 'entrate',
+        rows: incomes, ramp: GREENS, builtIn: INCOME_CATEGORIES, income: true, empty: 'Nessuna entrata registrata. Le categorie compariranno qui.' })}
+      ${ranking({ id: 'vanno', title: 'Dove vanno', sub: 'Uscite per categoria, da sempre.', lead: 'Prima voce di spesa', of: 'uscite',
+        rows: expenses, ramp: REDS, builtIn: EXPENSE_CATEGORIES, income: false, empty: 'Nessuna spesa registrata. Le categorie compariranno qui.' })}
+    </div>`;
+}
+
 // ---------- dashboard ----------
 
 function dashboard(main, s) {
@@ -99,12 +219,16 @@ function dashboard(main, s) {
         <div><dt>Ultimo controllo</dt><dd class="small">${s.lastCheck ? fmtStamp(s.lastCheck.checked_at) : 'Mai verificato'}</dd></div>
       </dl>
 
+      ${allTime(s)}
+
       <section class="section">
         <h2>Ultimi movimenti ${recent.length ? html`<a href="#/transazioni">Tutte le transazioni</a>` : ''}</h2>
         ${recent.length ? movementsTable(recent, s.accounts) : emptyMovements()}
       </section>
       <p class="section"><button class="btn btn--ghost" data-open="account">${icon('plus')}Aggiungi un conto</button></p>
     </div>`;
+  // The page's CSP forbids style attributes in markup; computed sizes and colours are applied through the CSSOM.
+  main.querySelectorAll('[data-style]').forEach((el) => { el.style.cssText = el.dataset.style; });
 }
 
 // ---------- transazioni ----------

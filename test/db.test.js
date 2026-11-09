@@ -38,7 +38,7 @@ test('recover exception stores the expected recovery', () => {
   db.addExpense(expense(bank, 10000, {
     exception: { type: 'recover', reason: 'Componente per lavoro', expected_recovery_cents: 12000, recovery_source: 'Cliente', recovery_due: '2026-12-01' },
   }));
-  const ex = db.getState().transactions[0];
+  const ex = db.getState().transactions.find((t) => t.kind === 'expense');
   assert.deepEqual([ex.exception_type, ex.overflow_cents, ex.expected_recovery_cents, ex.recovery_status], ['recover', 3000, 12000, 'pending']);
 });
 
@@ -54,7 +54,7 @@ test('exception records the overflow and keeps the goal', () => {
   const { db, bank } = setup();
   db.addExpense(expense(bank, 10000, { exception: { type: 'emergency', reason: 'Riparazione urgente' } }));
   const s = db.getState();
-  assert.equal(s.transactions[0].overflow_cents, 3000);
+  assert.equal(s.transactions.find((t) => t.kind === 'expense').overflow_cents, 3000);
   assert.equal(s.goal.amount_cents, 50000);
   assert.equal(s.totals.status, 'deficit'); // 470 < 500 after the goal had been reached
   assert.equal(s.totals.F, 3000);
@@ -125,4 +125,17 @@ test('setup is all-or-nothing', () => {
   db.setup({ accounts: [{ name: 'Contanti', kind: 'cash', opening_cents: 15000 }, { name: 'Conto', kind: 'bank', opening_cents: 42000 }], goal_cents: 50000 });
   assert.equal(db.getState().totals.D, 7000);
   assert.deepEqual(db.getState().accounts.map((a) => a.name), ['Contanti', 'Conto bancario']); // fixed names win over input
+});
+
+test('own categories: added once, usable, Altro stays last, duplicates and blanks refused', () => {
+  const { db, bank } = setup();
+  assert.equal(db.addCategory({ kind: 'income', name: '  paghetta ' }), 'Paghetta');
+  assert.deepEqual(db.getState().categories.income, ['Lavoro', 'Rimborso', 'Regalo', 'Paghetta', 'Altro']);
+  assert.deepEqual(db.getState().categories.expense.at(-1), 'Altro');
+  assert.throws(() => db.addCategory({ kind: 'income', name: 'PAGHETTA' }), { code: 'INVALID' });
+  assert.throws(() => db.addCategory({ kind: 'income', name: 'lavoro' }), { code: 'INVALID' });
+  assert.throws(() => db.addCategory({ kind: 'income', name: '   ' }), { code: 'INVALID' });
+  assert.throws(() => db.addCategory({ kind: 'transfer', name: 'X' }), { code: 'INVALID' });
+  db.addIncome({ account_id: bank, amount_cents: 2000, description: 'Nonna', category: 'Paghetta', date: '2026-11-02' });
+  assert.throws(() => db.addExpense(expense(bank, 100, { category: 'Paghetta' })), { code: 'INVALID' }); // income-only
 });

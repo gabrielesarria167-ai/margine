@@ -32,7 +32,14 @@ const MIGRATIONS = [
      id INTEGER PRIMARY KEY, account_id INTEGER NOT NULL REFERENCES accounts(id),
      counted_cents INTEGER NOT NULL, computed_cents INTEGER NOT NULL,
      adjustment_id INTEGER REFERENCES transactions(id), reason TEXT, checked_at TEXT NOT NULL);`,
+  `CREATE TABLE categories (
+     id INTEGER PRIMARY KEY,
+     kind TEXT NOT NULL CHECK (kind IN ('expense','income')),
+     name TEXT NOT NULL COLLATE NOCASE, created_at TEXT NOT NULL,
+     UNIQUE (kind, name));`,
 ];
+
+const DEFAULT_CATEGORIES = { expense: EXPENSE_CATEGORIES, income: INCOME_CATEGORIES };
 
 export class LedgerError extends Error {
   constructor(code, message) { super(message); this.code = code; }
@@ -79,6 +86,13 @@ export function openDb(file) {
     if (goal && !goal.reached_at && patrimonio() >= goal.amount_cents) run('UPDATE goals SET reached_at = ? WHERE id = ?', now(), goal.id);
   }
 
+  // Built-in categories, then the user's own in the order added, with Altro always last.
+  const categoryList = (kind) => [
+    ...DEFAULT_CATEGORIES[kind].filter((c) => c !== 'Altro'),
+    ...all('SELECT name FROM categories WHERE kind = ? ORDER BY id', kind).map((r) => r.name),
+    'Altro',
+  ];
+
   const account = (id) => get('SELECT * FROM accounts WHERE id = ?', id) ?? fail('INVALID', 'Conto non trovato.');
   const requireFunds = (accountId, amount) => {
     const bal = balances().get(accountId) ?? 0;
@@ -113,6 +127,7 @@ export function openDb(file) {
         totals: totals(patrimonio(b), goal),
         lastCheck: get('SELECT checked_at, account_id FROM balance_checks ORDER BY id DESC LIMIT 1') ?? null,
         goals: all('SELECT * FROM goals ORDER BY id DESC'),
+        categories: { expense: categoryList('expense'), income: categoryList('income') },
         transactions: all(
           `SELECT t.*, e.type AS exception_type, e.reason AS exception_reason, e.overflow_cents,
                   e.expected_recovery_cents, e.recovery_source, e.recovery_due, e.recovery_status
@@ -146,7 +161,7 @@ export function openDb(file) {
         const row = {
           kind: 'expense', amount_cents: amount, account_id: accountId,
           description: text(input.description, 'Descrizione', { required: true }),
-          category: oneOf(input.category, EXPENSE_CATEGORIES, 'Categoria'),
+          category: oneOf(input.category, categoryList('expense'), 'Categoria'),
           date: isoDate(input.date, 'Data'), note: text(input.note, 'Nota', { max: 1000 }),
         };
         requireFunds(accountId, amount);
@@ -173,9 +188,23 @@ export function openDb(file) {
       return tx(() => insertTx({
         kind: 'income', amount_cents: cents(input.amount_cents, 'Importo'), account_id: account(input.account_id).id,
         description: text(input.description, 'Provenienza', { required: true }),
-        category: oneOf(input.category, INCOME_CATEGORIES, 'Categoria'),
+        category: oneOf(input.category, categoryList('income'), 'Categoria'),
         date: isoDate(input.date, 'Data di ricezione'), note: text(input.note, 'Nota', { max: 1000 }),
       }));
+    },
+
+    // A category of the user's own, e.g. "paghetta" → "Paghetta". Returns the stored name.
+    addCategory({ kind, name }) {
+      return tx(() => {
+        oneOf(kind, Object.keys(DEFAULT_CATEGORIES), 'Tipo di categoria');
+        const s = text(String(name ?? '').replace(/\s+/g, ' '), 'Nome della categoria', { required: true, max: 30 });
+        const label = s.charAt(0).toLocaleUpperCase('it-IT') + s.slice(1);
+        const key = label.toLocaleLowerCase('it-IT');
+        const dupe = categoryList(kind).find((c) => c.toLocaleLowerCase('it-IT') === key);
+        if (dupe) fail('INVALID', `La categoria «${dupe}» esiste già.`);
+        run('INSERT INTO categories (kind, name, created_at) VALUES (?, ?, ?)', kind, label, now());
+        return label;
+      });
     },
 
     addTransfer(input) {

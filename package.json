@@ -1,7 +1,7 @@
 {
   "name": "margine",
   "productName": "Margine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Personal Finance Tracker",
   "type": "module",
   "main": "src/main.js",

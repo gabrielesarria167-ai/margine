@@ -37,6 +37,64 @@ const select = (name, label, options, selected) => html`
 const date = (name, label, value = todayISO()) => html`
   <div class="field"><label for="f-${name}">${label}</label><input class="input" type="date" id="f-${name}" name="${name}" value="${value}" aria-describedby="e-${name}">${errorSlot(name)}</div>`;
 
+// Categories as pills (radio buttons) plus "Aggiungi la tua", which saves a new one and selects it.
+const categoryPills = (kind, selected) => html`${store.state.categories[kind].map((c) => html`
+  <label class="pill"><input type="radio" name="category" value="${c}" ${c === selected ? 'checked' : ''}>${c}</label>`)}`;
+const categoryField = (kind, selected) => html`
+  <fieldset class="cat-field">
+    <legend>Categoria</legend>
+    <div class="pills"><span class="pill-list">${categoryPills(kind, selected)}</span><button type="button" class="btn pill-add" data-cat-open>${icon('plus')}Aggiungi la tua</button></div>
+    <div class="cat-new" hidden>
+      <label for="f-newcat">Nome della nuova categoria</label>
+      <div class="cat-new-row">
+        <input class="input" id="f-newcat" maxlength="30" autocomplete="off" aria-describedby="e-newcat h-newcat">
+        <button type="button" class="btn" data-cat-add>Aggiungi</button>
+      </div>
+      <p class="hint" id="h-newcat">Resta tra le categorie di ${kind === 'income' ? 'entrata' : 'spesa'} e compare nella dashboard.</p>
+      <p class="field-error" id="e-newcat" hidden></p>
+      <button type="button" class="btn btn--ghost cat-cancel" data-cat-cancel>Annulla</button>
+    </div>
+  </fieldset>`;
+
+function wireCategories(form, kind) {
+  const box = form.querySelector('.cat-new');
+  const input = box.querySelector('input');
+  const err = box.querySelector('.field-error');
+  const opener = form.querySelector('[data-cat-open]');
+  const addBtn = box.querySelector('[data-cat-add]');
+  const show = (on) => {
+    box.hidden = !on;
+    opener.hidden = on;
+    err.hidden = true;
+    input.removeAttribute('aria-invalid');
+    if (on) input.focus(); else { input.value = ''; opener.focus(); }
+  };
+  const add = async () => {
+    addBtn.disabled = true;
+    try {
+      const name = await call('addCategory', { kind, name: input.value });
+      const list = store.state.categories[kind];
+      list.splice(list.length - 1, 0, name); // same order the database returns: before Altro
+      form.querySelector('.pill-list').innerHTML = String(categoryPills(kind, name));
+      show(false);
+      form.dispatchEvent(new Event('input')); // forms that keep a draft pick up the new choice
+      toast(`Categoria «${name}» aggiunta.`);
+    } catch (e) {
+      err.textContent = e.message;
+      err.hidden = false;
+      input.setAttribute('aria-invalid', 'true');
+      input.focus();
+    } finally { addBtn.disabled = false; }
+  };
+  opener.onclick = () => show(true);
+  box.querySelector('[data-cat-cancel]').onclick = () => show(false);
+  addBtn.onclick = add;
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); add(); } // never submit the whole form from here
+    if (e.key === 'Escape') { e.preventDefault(); show(false); }
+  });
+}
+
 const accountOptions = () => store.state.accounts.map((a) => [a.id, `${a.name} · ${formatEuro(a.balance_cents)}`]);
 const accountById = (id) => store.state.accounts.find((a) => a.id === Number(id));
 const signed = (c) => `${c > 0 ? '+' : c < 0 ? '−' : ''}${formatEuro(Math.abs(c))}`;
@@ -124,14 +182,13 @@ function expenseForm() {
         ${money('amount', 'Importo', { value: draft.amount, large: true })}
         <p class="verdict" aria-live="polite"></p>
         ${text('description', 'Descrizione', draft.description)}
-        <div class="row-2">
-          ${select('category', 'Categoria', EXPENSE_CATEGORIES.map((c) => [c, c]), draft.category)}
-          ${select('account_id', 'Pagato con', accountOptions(), draft.account_id)}
-        </div>
+        ${categoryField('expense', draft.category)}
+        ${select('account_id', 'Pagato con', accountOptions(), draft.account_id)}
         ${date('date', 'Data', draft.date)}
         ${area('note', 'Nota (facoltativa)', draft.note)}`,
       foot: footer('Registra spesa'),
     });
+    wireCategories(form, 'expense');
     const verdict = form.querySelector('.verdict');
     const button = form.querySelector('[type=submit]');
     const update = () => {
@@ -256,15 +313,14 @@ function incomeForm() {
       ${money('amount', 'Importo ricevuto', { large: true })}
       <p class="verdict" aria-live="polite"></p>
       ${text('description', 'Provenienza')}
-      <div class="row-2">
-        ${select('account_id', 'Ricevuto su', accountOptions(), (s.accounts.find((a) => a.kind === 'bank') ?? s.accounts[0]).id)}
-        ${select('category', 'Categoria', INCOME_CATEGORIES.map((c) => [c, c]))}
-      </div>
+      ${categoryField('income', INCOME_CATEGORIES[0])}
+      ${select('account_id', 'Ricevuto su', accountOptions(), (s.accounts.find((a) => a.kind === 'bank') ?? s.accounts[0]).id)}
       ${date('date', 'Data di ricezione')}
       ${area('note', 'Nota (facoltativa)')}
       <p class="hint">Registra solo denaro già incassato: le entrate previste non fanno parte del patrimonio.</p>`,
     foot: footer('Registra entrata'),
   });
+  wireCategories(form, 'income');
   const verdict = form.querySelector('.verdict');
   const update = () => {
     const amount = parseEuro(form.amount.value) ?? 0;
