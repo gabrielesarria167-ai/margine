@@ -93,6 +93,21 @@ export function openDb(file) {
     'Altro',
   ];
 
+  // A new or changed name for one of the user's categories: tidy, capitalised, not clashing with any other.
+  const categoryName = (kind, name, except = null) => {
+    const s = text(String(name ?? '').replace(/\s+/g, ' '), 'Nome della categoria', { required: true, max: 30 });
+    const label = s.charAt(0).toLocaleUpperCase('it-IT') + s.slice(1);
+    const key = label.toLocaleLowerCase('it-IT');
+    const dupe = categoryList(kind).find((c) => c !== except && c.toLocaleLowerCase('it-IT') === key);
+    if (dupe) fail('INVALID', `La categoria «${dupe}» esiste già.`);
+    return label;
+  };
+  // Only categories the user added can change; built-in ones are not in the table.
+  const ownCategory = (kind, name) => {
+    oneOf(kind, Object.keys(DEFAULT_CATEGORIES), 'Tipo di categoria');
+    return get('SELECT * FROM categories WHERE kind = ? AND name = ?', kind, String(name ?? '')) ?? fail('INVALID', 'Categoria non trovata.');
+  };
+
   const account = (id) => get('SELECT * FROM accounts WHERE id = ?', id) ?? fail('INVALID', 'Conto non trovato.');
   const requireFunds = (accountId, amount) => {
     const bal = balances().get(accountId) ?? 0;
@@ -197,13 +212,30 @@ export function openDb(file) {
     addCategory({ kind, name }) {
       return tx(() => {
         oneOf(kind, Object.keys(DEFAULT_CATEGORIES), 'Tipo di categoria');
-        const s = text(String(name ?? '').replace(/\s+/g, ' '), 'Nome della categoria', { required: true, max: 30 });
-        const label = s.charAt(0).toLocaleUpperCase('it-IT') + s.slice(1);
-        const key = label.toLocaleLowerCase('it-IT');
-        const dupe = categoryList(kind).find((c) => c.toLocaleLowerCase('it-IT') === key);
-        if (dupe) fail('INVALID', `La categoria «${dupe}» esiste già.`);
+        const label = categoryName(kind, name);
         run('INSERT INTO categories (kind, name, created_at) VALUES (?, ?, ?)', kind, label, now());
         return label;
+      });
+    },
+
+    // Renames the category and the movements already filed under it, so history keeps matching.
+    renameCategory({ kind, name, to }) {
+      return tx(() => {
+        const cat = ownCategory(kind, name);
+        const label = categoryName(kind, to, cat.name);
+        run('UPDATE categories SET name = ? WHERE id = ?', label, cat.id);
+        run('UPDATE transactions SET category = ? WHERE kind = ? AND category = ?', label, kind, cat.name);
+        return label;
+      });
+    },
+
+    // Removes the category; its movements move to Altro (the form says so before confirming). Amounts never change.
+    deleteCategory({ kind, name }) {
+      return tx(() => {
+        const cat = ownCategory(kind, name);
+        const moved = Number(run('UPDATE transactions SET category = ? WHERE kind = ? AND category = ?', 'Altro', kind, cat.name).changes);
+        run('DELETE FROM categories WHERE id = ?', cat.id);
+        return { moved };
       });
     },
 

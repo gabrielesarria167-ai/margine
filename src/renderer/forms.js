@@ -514,7 +514,108 @@ function accountForm() {
   });
 }
 
-const FORMS = { expense: expenseForm, income: incomeForm, transfer: transferForm, goal: goalForm, check: checkForm, account: accountForm };
+// ---------- le tue categorie: rinomina ed elimina ----------
+
+function categoriesForm() {
+  const BUILT_IN = { income: INCOME_CATEGORIES, expense: EXPENSE_CATEGORIES };
+  const ui = { mode: null, kind: null, name: null, error: '' }; // mode: 'rename' | 'delete' for the row kind/name
+  const at = (kind, name) => ui.kind === kind && ui.name === name;
+
+  function render(focus) {
+    const s = store.state;
+    const uses = (kind, name) => s.transactions.filter((t) => t.kind === kind && t.category === name).length;
+    const movimenti = (n) => `${n} ${n === 1 ? 'movimento' : 'movimenti'}`;
+    const row = (kind, name) => {
+      const n = uses(kind, name);
+      if (ui.mode === 'rename' && at(kind, name)) {
+        return html`<li class="cat-row is-editing">
+          <label class="visually-hidden" for="f-rename">Nuovo nome per ${name}</label>
+          <input class="input" id="f-rename" name="rename" value="${name}" maxlength="30" autocomplete="off" aria-describedby="e-rename" ${ui.error ? html`aria-invalid="true"` : ''}>
+          <div class="cat-actions"><button type="submit" class="btn btn--primary">Salva</button><button type="button" class="btn btn--ghost" data-cancel>Annulla</button></div>
+          <p class="field-error" id="e-rename" ${ui.error ? '' : 'hidden'}>${ui.error}</p>
+        </li>`;
+      }
+      if (ui.mode === 'delete' && at(kind, name)) {
+        return html`<li class="cat-row is-deleting">
+          <p>Eliminare «${name}»? ${n ? `I suoi ${movimenti(n)} passeranno in Altro; gli importi non cambiano.` : 'Non ha movimenti.'}</p>
+          <div class="cat-actions"><button type="button" class="btn" data-confirm data-focus>Elimina</button><button type="button" class="btn btn--ghost" data-cancel>Annulla</button></div>
+          ${ui.error ? html`<p class="field-error">${ui.error}</p>` : ''}
+        </li>`;
+      }
+      const key = html`data-kind="${kind}" data-name="${name}"`;
+      return html`<li class="cat-row">
+        <div><p class="desc">${name}</p><p class="desc-sub">${movimenti(n)}</p></div>
+        <div class="cat-actions">
+          <button type="button" class="btn" data-rename ${key} ${focus === `rename:${kind}:${name}` ? 'data-focus' : ''}>Rinomina<span class="visually-hidden"> ${name}</span></button>
+          <button type="button" class="btn btn--ghost" data-delete ${key}>Elimina<span class="visually-hidden"> ${name}</span></button>
+        </div>
+      </li>`;
+    };
+    const group = (kind, title) => {
+      const own = s.categories[kind].filter((c) => !BUILT_IN[kind].includes(c));
+      return html`<section class="cat-group" aria-labelledby="cg-${kind}">
+        <h3 id="cg-${kind}">${title}</h3>
+        ${own.length
+          ? html`<ul class="cat-list">${own.map((c) => row(kind, c))}</ul>`
+          : html`<p class="muted">Nessuna categoria tua. Aggiungila da ${kind === 'income' ? 'Nuova entrata' : 'Nuova spesa'} con «Aggiungi la tua».</p>`}
+      </section>`;
+    };
+    const form = sheet({
+      title: 'Le tue categorie',
+      body: html`
+        <p class="hint">Le categorie di Margine (Lavoro, Cibo, Altro…) restano fisse. Quelle che hai aggiunto tu si possono rinominare o eliminare.</p>
+        ${group('income', 'Entrate')}
+        ${group('expense', 'Spese')}`,
+      foot: html`<button type="button" class="btn" data-close>Chiudi</button>`,
+    });
+    // Keep keyboard focus in the sheet after every change, including a delete that removes the focused row.
+    (form.querySelector('[data-focus], #f-rename') ?? form.querySelector('[data-rename]') ?? form.querySelector('[data-close]'))?.focus();
+    form.querySelector('#f-rename')?.select();
+
+    const reset = (focusKey) => { Object.assign(ui, { mode: null, kind: null, name: null, error: '' }); render(focusKey); };
+    const run = async (fn, message) => {
+      const busy = form.querySelectorAll('.cat-row button');
+      busy.forEach((b) => { b.disabled = true; });
+      try {
+        const r = await fn();
+        await refresh(); // dashboard rankings and history pick up the change
+        toast(message(r));
+        return r;
+      } catch (e) {
+        ui.error = e.message;
+        render();
+        return null;
+      }
+    };
+
+    form.addEventListener('click', async (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      if (b.matches('[data-rename], [data-delete]')) {
+        Object.assign(ui, { mode: b.matches('[data-rename]') ? 'rename' : 'delete', kind: b.dataset.kind, name: b.dataset.name, error: '' });
+        render();
+      } else if (b.matches('[data-cancel]')) {
+        reset(`rename:${ui.kind}:${ui.name}`);
+      } else if (b.matches('[data-confirm]')) {
+        const { kind, name } = ui;
+        if (await run(() => call('deleteCategory', { kind, name }), (r) => `Categoria «${name}» eliminata${r.moved ? `: ${r.moved} ${r.moved === 1 ? 'movimento spostato' : 'movimenti spostati'} in Altro` : ''}.`)) reset();
+      }
+    });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // Enter in the rename field saves it
+      if (ui.mode !== 'rename') return;
+      const { kind, name } = ui;
+      const to = await run(() => call('renameCategory', { kind, name, to: form.rename.value }), (r) => `«${name}» ora si chiama «${r}».`);
+      if (to) reset(`rename:${kind}:${to}`);
+    });
+    form.querySelector('#f-rename')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); reset(`rename:${ui.kind}:${ui.name}`); } // close the edit, not the sheet
+    });
+  }
+  render();
+}
+
+const FORMS = { categories: categoriesForm, expense: expenseForm, income: incomeForm, transfer: transferForm, goal: goalForm, check: checkForm, account: accountForm };
 
 export function openForm(kind) {
   if (!store.state?.accounts.length || !FORMS[kind]) return;

@@ -139,3 +139,29 @@ test('own categories: added once, usable, Altro stays last, duplicates and blank
   db.addIncome({ account_id: bank, amount_cents: 2000, description: 'Nonna', category: 'Paghetta', date: '2026-11-02' });
   assert.throws(() => db.addExpense(expense(bank, 100, { category: 'Paghetta' })), { code: 'INVALID' }); // income-only
 });
+
+test('own categories: rename carries history along, delete moves movements to Altro', () => {
+  const { db, bank } = setup();
+  db.addCategory({ kind: 'income', name: 'paghetta' });
+  db.addCategory({ kind: 'expense', name: 'paghetta' }); // same name, other kind: kept apart
+  db.addIncome({ account_id: bank, amount_cents: 2000, description: 'Nonna', category: 'Paghetta', date: '2026-11-02' });
+  db.addExpense(expense(bank, 500, { category: 'Paghetta' }));
+  const cats = (kind) => db.getState().categories[kind];
+  const catOf = (kind) => db.getState().transactions.find((t) => t.kind === kind).category;
+
+  assert.equal(db.renameCategory({ kind: 'income', name: 'Paghetta', to: 'mancia' }), 'Mancia');
+  assert.deepEqual(cats('income'), ['Lavoro', 'Rimborso', 'Regalo', 'Mancia', 'Altro']);
+  assert.equal(catOf('income'), 'Mancia');
+  assert.equal(catOf('expense'), 'Paghetta');
+  assert.equal(db.renameCategory({ kind: 'income', name: 'Mancia', to: 'MANCIA' }), 'MANCIA'); // own case change is fine
+  assert.throws(() => db.renameCategory({ kind: 'income', name: 'MANCIA', to: 'regalo' }), { code: 'INVALID' });
+  assert.throws(() => db.renameCategory({ kind: 'income', name: 'Lavoro', to: 'Stipendio' }), { code: 'INVALID' }); // built-in
+  assert.throws(() => db.deleteCategory({ kind: 'expense', name: 'Altro' }), { code: 'INVALID' });
+
+  const before = db.getState().totals;
+  assert.deepEqual(db.deleteCategory({ kind: 'income', name: 'MANCIA' }), { moved: 1 });
+  assert.equal(catOf('income'), 'Altro');
+  assert.deepEqual(cats('income'), ['Lavoro', 'Rimborso', 'Regalo', 'Altro']);
+  assert.deepEqual(db.getState().totals, before);
+  assert.equal(catOf('expense'), 'Paghetta');
+});

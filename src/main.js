@@ -5,7 +5,7 @@ import { openDb, LedgerError } from './db.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 // Keep in sync with src/preload.cjs (a sandboxed preload cannot import this file).
-const ACTIONS = ['getState', 'previewExpense', 'createAccount', 'setup', 'addExpense', 'addIncome', 'addTransfer', 'addCategory', 'setGoal', 'checkBalance'];
+const ACTIONS = ['getState', 'previewExpense', 'createAccount', 'setup', 'addExpense', 'addIncome', 'addTransfer', 'addCategory', 'renameCategory', 'deleteCategory', 'setGoal', 'checkBalance'];
 let db;
 
 if (!app.requestSingleInstanceLock()) app.quit(); // one writer per database

@@ -179,7 +179,8 @@ function allTime(s) {
         rows: incomes, ramp: GREENS, builtIn: INCOME_CATEGORIES, income: true, empty: 'Nessuna entrata registrata. Le categorie compariranno qui.' })}
       ${ranking({ id: 'vanno', title: 'Dove vanno', sub: 'Uscite per categoria, da sempre.', lead: 'Prima voce di spesa', of: 'uscite',
         rows: expenses, ramp: REDS, builtIn: EXPENSE_CATEGORIES, income: false, empty: 'Nessuna spesa registrata. Le categorie compariranno qui.' })}
-    </div>`;
+    </div>
+    <p class="rank-foot"><button class="btn btn--ghost" data-open="categories">${icon('edit')}Gestisci le tue categorie</button></p>`;
 }
 
 // ---------- dashboard ----------
