@@ -34,7 +34,8 @@
         }
       ],
       "category": "public.app-category.finance",
-      "identity": null
+      "identity": "-",
+      "hardenedRuntime": false
     },
     "win": {
       "target": "nsis"
