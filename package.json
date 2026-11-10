@@ -1,7 +1,7 @@
 {
   "name": "margine",
   "productName": "Margine",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Personal Finance Tracker",
   "type": "module",
   "main": "src/main.js",
@@ -20,7 +20,10 @@
   "build": {
     "appId": "app.margine.desktop",
     "productName": "Margine",
-    "electronLanguages": ["it", "en"],
+    "electronLanguages": [
+      "it",
+      "en"
+    ],
     "files": [
       "src/**/*",
       "package.json"
