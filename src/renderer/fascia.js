@@ -86,8 +86,8 @@ function fitSegments() {
           const host = before ?? segs[i + 1];
           seg.classList.remove('is-compact'); // its text lives in the roomy host, so it keeps full size
           seg.classList.add('is-out'); // emptied: no padding, so the sliver keeps its true width
-          text.classList.add('is-out', `on-${host.dataset.kind}`, before ? 'to-left' : 'to-right');
-          if (before) text.style.right = `${100 - left}%`;
+          text.classList.add('is-out', `on-${host.dataset.kind}`);
+          if (before) { text.classList.add('to-left'); text.style.right = `${100 - left}%`; }
           else { text.style.left = `${left + w}%`; host.classList.add('is-host-start'); } // host's own text moves to its far end
         }
       }

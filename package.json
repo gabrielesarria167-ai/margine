@@ -20,6 +20,7 @@
   "build": {
     "appId": "app.margine.desktop",
     "productName": "Margine",
+    "electronLanguages": ["it", "en"],
     "files": [
       "src/**/*",
       "package.json"

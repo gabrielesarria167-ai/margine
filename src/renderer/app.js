@@ -18,7 +18,7 @@ document.querySelector('.toast').innerHTML = String(html`${icon('done')}<span></
 mountFascia(document.querySelector('.fascia'));
 
 let lastRoute = null;
-setRender(() => {
+function render() {
   const s = store.state;
   const isSetup = !s.accounts.length;
   const asked = location.hash.slice(2);
@@ -34,9 +34,11 @@ setRender(() => {
   main.scrollTop = scroll;
   if (route !== lastRoute && lastRoute) main.focus({ preventScroll: true });
   lastRoute = route;
-});
+}
+setRender(render);
 
-addEventListener('hashchange', () => refresh());
+// Every save already refreshes the state, so changing section only redraws it.
+addEventListener('hashchange', () => { if (store.state) render(); });
 document.addEventListener('click', (e) => {
   const opener = e.target.closest('[data-open]');
   if (opener) openForm(opener.dataset.open);

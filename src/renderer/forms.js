@@ -11,10 +11,7 @@ import { renderFascia, previewSpend } from './fascia.js';
 
 const dlg = document.getElementById('sheet');
 dlg.addEventListener('close', () => { previewSpend(0); if (store.state) renderFascia(store.state.totals); });
-dlg.addEventListener('click', (e) => {
-  if (e.target === dlg) dlg.close(); // click outside the sheet
-  if (e.target.closest('[data-close]')) dlg.close();
-});
+dlg.addEventListener('click', (e) => { if (e.target.closest('[data-close]')) dlg.close(); }); // outside clicks: closedby="any"
 
 // ---------- field builders ----------
 
