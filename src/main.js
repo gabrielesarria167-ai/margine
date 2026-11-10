@@ -18,6 +18,7 @@ function createWindow() {
     width: 1280, height: 820, minWidth: 960, minHeight: 640,
     show: false,
     title: 'Margine',
+    icon: path.join(dir, 'renderer', 'logo.png'), // Windows/Linux window icon; macOS uses the bundle icon
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1C1E20' : '#ECEDE9', // matches --canvas, avoids a flash
     ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 18, y: 18 } } : {}),
     webPreferences: { preload: path.join(dir, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false },
@@ -34,6 +35,7 @@ app.on('second-instance', () => {
 });
 
 if (primary) app.whenReady().then(() => {
+  if (!app.isPackaged) app.dock?.setIcon(path.join(dir, '..', 'build', 'icon.png')); // dev only: packaged builds get build/icon.* from electron-builder
   db = openDb(path.join(app.getPath('userData'), 'margine.db'));
   for (const name of ACTIONS) {
     ipcMain.handle(name, (_e, arg) => {

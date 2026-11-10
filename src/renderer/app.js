@@ -11,7 +11,7 @@ const main = document.querySelector('main');
 const sheet = document.getElementById('sheet');
 
 document.querySelector('.rail').innerHTML = String(html`
-  <p class="wordmark"><span class="wordmark-mark" aria-hidden="true"><i></i><i></i></span>Margine</p>
+  <p class="wordmark"><img class="wordmark-mark" src="logo.png" alt="">Margine</p>
   <div class="nav">${NAV.map(([route, label, ic]) => html`<a href="#/${route}" data-route="${route}">${icon(ic)}${label}</a>`)}</div>
   <div class="rail-foot"><button class="btn btn--primary btn--rail" data-open="expense">${icon('plus')}Nuova spesa</button></div>`);
 document.querySelector('.toast').innerHTML = String(html`${icon('done')}<span></span>`);
