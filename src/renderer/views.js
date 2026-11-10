@@ -1,11 +1,9 @@
-import { formatEuro, parseEuro, totals, todayISO, ACCOUNT_KINDS, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../ledger.js';
+import { formatEuro, signedEuro, parseEuro, totals, draftGoal, todayISO, ACCOUNT_KINDS, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../ledger.js';
 import { dailyBalance, trendLine, byCategory, niceStep } from '../stats.js';
 import { html } from './html.js';
 import { icon } from './icons.js';
-import { call, refresh, toast, fmtDay, fmtDayYear, fmtStamp } from './store.js';
+import { call, refresh, toast, fmtDay, fmtDayYear, fmtStamp, movimenti } from './store.js';
 import { renderFascia } from './fascia.js';
-
-const KIND_ICON = { cash: 'cash', bank: 'bank', digital: 'digital' };
 
 // ---------- shared: movements table ----------
 
@@ -67,7 +65,6 @@ function statusSentence(t) {
 
 const wholeEuro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0, useGrouping: 'always' });
 const monthFmt = new Intl.DateTimeFormat('it-IT', { month: 'short', timeZone: 'UTC' });
-const signedEuro = (c) => `${c > 0 ? '+' : c < 0 ? '−' : ''}${formatEuro(Math.abs(c))}`;
 // Slice shades step by lightness, biggest category darkest: green for income, red for expenses.
 // shortcut: categories past the last shade all share the lightest one; add shades if people keep more than that.
 const GREENS = ['#00502C', '#007A43', '#4FA57A', '#9FCFB4', '#C9E3D3'];
@@ -95,7 +92,7 @@ function balanceChart(series) {
     <div class="chart ${slope >= 0 ? 'chart--up' : 'chart--down'}">
       <div class="chart-legend">
         <span><span class="key-area" aria-hidden="true"></span>Patrimonio, giorno per giorno</span>
-        <span><span class="key-trend" aria-hidden="true"></span>Tendenza: ${perMonth >= 0 ? '+' : '−'}${formatEuro(Math.abs(perMonth))} al mese</span>
+        <span><span class="key-trend" aria-hidden="true"></span>Tendenza: ${signedEuro(perMonth)} al mese</span>
       </div>
       <div class="chart-scroll"><div class="chart-plot">
         <div class="chart-box">
@@ -144,7 +141,7 @@ function ranking({ id, title, sub, lead, of, rows, ramp, builtIn, income, empty 
         <tbody>${slices.map((x) => html`<tr>
           <td>
             <div class="desc"><span class="swatch" aria-hidden="true" data-style="background: ${x.color}"></span>${x.name}${builtIn.includes(x.name) ? '' : html`<span class="tag">personale</span>`}</div>
-            <p class="desc-sub">${x.count} ${x.count === 1 ? 'movimento' : 'movimenti'}</p>
+            <p class="desc-sub">${movimenti(x.count)}</p>
           </td>
           <td class="bar-cell"><span class="rank-bar ${income ? 'rank-bar--in' : ''}"><span data-style="width: ${x.share.toFixed(1)}%"></span></span></td>
           <td class="pct">${pctOf(x)}</td>
@@ -162,7 +159,6 @@ function allTime(s) {
   const tin = sum(incomes), tout = sum(expenses), net = tin - tout;
   const series = dailyBalance(s.transactions, todayISO());
   const kept = !tin ? '' : net >= 0 ? `Hai tenuto il ${Math.round(net / tin * 100)}% di ciò che è entrato` : 'Hai speso più di quanto è entrato';
-  const movimenti = (c) => `${c} ${c === 1 ? 'movimento' : 'movimenti'}`;
   return html`
     <section class="section" aria-labelledby="dasempre">
       <h2 id="dasempre">Da sempre</h2>
@@ -191,8 +187,8 @@ function dashboard(main, s) {
     ? html`<p class="status status--deficit">Deficit di ${formatEuro(t.F)}</p>`
     : t.status === 'building'
       ? html`<p class="status status--building">Mancano ${formatEuro(t.F)}</p>`
-      : html`<p class="status muted">${t.S ? html`Coperto${s.goal?.reached_at ? ` dal ${fmtDay(s.goal.reached_at.slice(0, 10))}` : ''}` : 'Nessun obiettivo fissato'}</p>`;
-  const recent = s.transactions.filter((x) => x.description !== 'Saldo iniziale').slice(0, 6);
+      : html`<p class="status muted">${t.S ? html`Coperto${s.goal?.reached_at ? ` dal ${fmtDay(s.goal.reached_at)}` : ''}` : 'Nessun obiettivo fissato'}</p>`;
+  const recent = s.transactions.filter((x) => !(x.kind === 'adjustment' && x.description === 'Saldo iniziale')).slice(0, 6);
 
   main.innerHTML = html`
     <div class="view">
@@ -208,7 +204,7 @@ function dashboard(main, s) {
         </section>
         <aside class="goal-state" aria-label="Obiettivo di risparmio">
           <h2>Obiettivo di risparmio</h2>
-          <p class="goal-figure">${formatEuro(t.O)}</p>
+          <p class="goal-figure">${formatEuro(t.S)}</p>
           ${goalStatus}
           <button class="btn" data-open="goal">${icon('goal')}Nuovo obiettivo</button>
         </aside>
@@ -216,7 +212,7 @@ function dashboard(main, s) {
 
       <dl class="stations">
         <div><dt>Patrimonio effettivo</dt><dd>${formatEuro(t.P)}</dd></div>
-        ${s.accounts.map((a) => html`<div><dt>${icon(KIND_ICON[a.kind])}${a.name}</dt><dd>${formatEuro(a.balance_cents)}</dd></div>`)}
+        ${s.accounts.map((a) => html`<div><dt>${icon(a.kind)}${a.name}</dt><dd>${formatEuro(a.balance_cents)}</dd></div>`)}
         <div><dt>Ultimo controllo</dt><dd class="small">${s.lastCheck ? fmtStamp(s.lastCheck.checked_at) : 'Mai verificato'}</dd></div>
       </dl>
 
@@ -272,8 +268,8 @@ function savingsNote(s) {
   const t = s.totals;
   if (!s.goal || !t.S) return 'Nessun obiettivo fissato: tutto il patrimonio è spendibile.';
   if (t.status !== 'covered') return statusSentence(t);
-  const reached = s.goal.reached_at ? `, coperto dal patrimonio dal ${fmtDay(s.goal.reached_at.slice(0, 10))}` : '';
-  return `Obiettivo fissato il ${fmtDay(s.goal.set_at.slice(0, 10))}${reached}.`;
+  const reached = s.goal.reached_at ? `, coperto dal patrimonio dal ${fmtDay(s.goal.reached_at)}` : '';
+  return `Obiettivo fissato il ${fmtDay(s.goal.set_at)}${reached}.`;
 }
 
 function savings(main, s) {
@@ -301,9 +297,9 @@ function savings(main, s) {
           <table class="table">
             <thead><tr><th scope="col">Fissato il</th><th scope="col">Nota</th><th scope="col">Raggiunto</th><th scope="col">Obiettivo</th></tr></thead>
             <tbody>${s.goals.map((g) => html`<tr>
-              <td class="date">${fmtDay(g.set_at.slice(0, 10))}</td>
+              <td class="date">${fmtDay(g.set_at)}</td>
               <td>${g.note ?? ''}</td>
-              <td class="acct">${g.reached_at ? fmtDay(g.reached_at.slice(0, 10)) : 'Non ancora'}</td>
+              <td class="acct">${g.reached_at ? fmtDay(g.reached_at) : 'Non ancora'}</td>
               <td class="amt">${formatEuro(g.amount_cents)}</td>
             </tr>`)}</tbody>
           </table>`
@@ -318,7 +314,7 @@ function setup(main) {
   // Contanti and Conto bancario keep their fixed names; only a card or digital account is named by the user.
   const row = (kind, name, removable = false) => html`
     <div class="setup-row" data-kind="${kind}">
-      ${icon(KIND_ICON[kind])}
+      ${icon(kind)}
       ${kind === 'digital'
         ? html`<label class="field"><span class="label">Nome</span><input class="input" name="name" value="${name}" maxlength="60" required></label>`
         : html`<div class="field"><span class="label">Conto</span><p class="setup-name">${name}</p></div>`}
@@ -364,7 +360,7 @@ function setup(main) {
     const { accounts, goalRaw } = read();
     const P = accounts.reduce((a, x) => a + (parseEuro(x.raw) ?? 0), 0);
     const goal = parseEuro(goalRaw) ?? 0;
-    renderFascia(totals(P, goal ? { amount_cents: goal, reached_at: P >= goal ? 'now' : null } : null));
+    renderFascia(totals(P, draftGoal(P, goal)));
   };
 
   form.addEventListener('input', preview);

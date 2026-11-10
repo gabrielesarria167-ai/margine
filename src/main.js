@@ -1,14 +1,16 @@
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openDb, LedgerError } from './db.js';
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 // Keep in sync with src/preload.cjs (a sandboxed preload cannot import this file).
-const ACTIONS = ['getState', 'previewExpense', 'createAccount', 'setup', 'addExpense', 'addIncome', 'addTransfer', 'addCategory', 'renameCategory', 'deleteCategory', 'setGoal', 'checkBalance'];
+const ACTIONS = ['getState', 'createAccount', 'setup', 'addExpense', 'addIncome', 'addTransfer', 'addCategory', 'renameCategory', 'deleteCategory', 'setGoal', 'checkBalance'];
 let db;
 
-if (!app.requestSingleInstanceLock()) app.quit(); // one writer per database
+// One writer per database. app.quit() is not immediate, so a second instance must also skip start-up below.
+const primary = app.requestSingleInstanceLock();
+if (!primary) app.quit();
 app.commandLine.appendSwitch('lang', 'it-IT'); // Italian date inputs and number pickers, whatever the system locale
 
 function createWindow() {
@@ -31,7 +33,7 @@ app.on('second-instance', () => {
   if (win) { if (win.isMinimized()) win.restore(); win.focus(); }
 });
 
-app.whenReady().then(() => {
+if (primary) app.whenReady().then(() => {
   db = openDb(path.join(app.getPath('userData'), 'margine.db'));
   for (const name of ACTIONS) {
     ipcMain.handle(name, (_e, arg) => {
@@ -45,6 +47,10 @@ app.whenReady().then(() => {
   }
   createWindow();
   app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); });
+}).catch((e) => { // without this a broken database means no window and no message
+  console.error(e);
+  dialog.showErrorBox('Margine non si apre', e.message);
+  app.quit();
 });
 
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

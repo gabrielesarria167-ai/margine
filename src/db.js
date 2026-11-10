@@ -1,12 +1,12 @@
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
 import {
-  accountBalances, totals, overflow, todayISO,
+  accountBalances, totals, overflow, todayISO, localISO,
   ACCOUNT_KINDS, EXPENSE_CATEGORIES, INCOME_CATEGORIES, EXCEPTION_TYPES,
 } from './ledger.js';
 
 // Append-only. Never edit a shipped step: other people's databases already ran it.
-const MIGRATIONS = [
+export const MIGRATIONS = [
   `CREATE TABLE accounts (
      id INTEGER PRIMARY KEY, name TEXT NOT NULL,
      kind TEXT NOT NULL CHECK (kind IN ('cash','bank','digital')), created_at TEXT NOT NULL);
@@ -54,9 +54,15 @@ const text = (v, label, { required = false, max = 200 } = {}) => {
   if (s.length > max) fail('INVALID', `${label} è troppo lungo.`);
   return s || null;
 };
+// Round-trip check: Date.parse rolls '2026-02-31' over to 3 March instead of rejecting it.
 const isoDate = (v, label) => {
   const s = String(v ?? '');
-  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s)) ? s : fail('INVALID', `${label}: data non valida.`);
+  const t = Date.parse(s);
+  return !Number.isNaN(t) && new Date(t).toISOString().slice(0, 10) === s ? s : fail('INVALID', `${label}: data non valida.`);
+};
+const pastDate = (v, label) => {
+  const s = isoDate(v, label);
+  return s <= todayISO() ? s : fail('INVALID', `${label}: non può essere nel futuro.`);
 };
 const oneOf = (v, list, label) => (list.includes(v) ? v : fail('INVALID', `${label} non valida.`));
 const now = () => new Date().toISOString();
@@ -64,7 +70,7 @@ const now = () => new Date().toISOString();
 export function openDb(file) {
   const db = new DatabaseSync(file);
   db.exec('PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL;');
-  migrate(db, file);
+  try { migrate(db, file); } catch (e) { db.close(); throw e; }
 
   const all = (sql, ...p) => db.prepare(sql).all(...p);
   const get = (sql, ...p) => db.prepare(sql).get(...p);
@@ -109,6 +115,16 @@ export function openDb(file) {
   };
 
   const account = (id) => get('SELECT * FROM accounts WHERE id = ?', id) ?? fail('INVALID', 'Conto non trovato.');
+  // The opening balance is "what you have now", so a movement dated before it is already counted inside it.
+  const sinceOpening = (date, ...accounts) => {
+    for (const a of accounts) {
+      if (date < localISO(a.created_at)) {
+        const since = new Date(a.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+        fail('INVALID', `Data: «${a.name}» è in Margine dal ${since}, e quello che è successo prima è già nel suo saldo iniziale.`);
+      }
+    }
+    return date;
+  };
   const requireFunds = (accountId, amount) => {
     const bal = balances().get(accountId) ?? 0;
     if (amount > bal) fail('INSUFFICIENT_FUNDS', `Sul conto «${account(accountId).name}» non ci sono abbastanza soldi.`);
@@ -151,11 +167,6 @@ export function openDb(file) {
       };
     },
 
-    previewExpense(amount) {
-      const { D } = current();
-      return { spendable_cents: D, overflow_cents: overflow(cents(amount, 'Importo'), D) };
-    },
-
     createAccount(input) {
       return tx(() => insertAccount(input));
     },
@@ -163,6 +174,7 @@ export function openDb(file) {
     // First run: all accounts and the goal in one transaction, so a failure never leaves a half-made setup.
     setup({ accounts, goal_cents }) {
       return tx(() => {
+        if (get('SELECT 1 FROM accounts')) fail('INVALID', 'Margine è già configurato.');
         if (!Array.isArray(accounts) || !accounts.length) fail('INVALID', 'Aggiungi almeno un conto.');
         accounts.forEach(insertAccount);
         if (goal_cents) run('INSERT INTO goals (amount_cents, set_at) VALUES (?, ?)', cents(goal_cents, 'Obiettivo'), now());
@@ -172,12 +184,13 @@ export function openDb(file) {
     addExpense(input) {
       return tx(() => {
         const amount = cents(input.amount_cents, 'Importo');
-        const accountId = account(input.account_id).id;
+        const acc = account(input.account_id);
+        const accountId = acc.id;
         const row = {
           kind: 'expense', amount_cents: amount, account_id: accountId,
           description: text(input.description, 'Descrizione', { required: true }),
           category: oneOf(input.category, categoryList('expense'), 'Categoria'),
-          date: isoDate(input.date, 'Data'), note: text(input.note, 'Nota', { max: 1000 }),
+          date: sinceOpening(pastDate(input.date, 'Data'), acc), note: text(input.note, 'Nota', { max: 1000 }),
         };
         requireFunds(accountId, amount);
         const over = overflow(amount, current().D);
@@ -200,12 +213,15 @@ export function openDb(file) {
     },
 
     addIncome(input) {
-      return tx(() => insertTx({
-        kind: 'income', amount_cents: cents(input.amount_cents, 'Importo'), account_id: account(input.account_id).id,
-        description: text(input.description, 'Provenienza', { required: true }),
-        category: oneOf(input.category, categoryList('income'), 'Categoria'),
-        date: isoDate(input.date, 'Data di ricezione'), note: text(input.note, 'Nota', { max: 1000 }),
-      }));
+      return tx(() => {
+        const acc = account(input.account_id);
+        return insertTx({
+          kind: 'income', amount_cents: cents(input.amount_cents, 'Importo'), account_id: acc.id,
+          description: text(input.description, 'Provenienza', { required: true }),
+          category: oneOf(input.category, categoryList('income'), 'Categoria'),
+          date: sinceOpening(pastDate(input.date, 'Data di ricezione'), acc), note: text(input.note, 'Nota', { max: 1000 }),
+        });
+      });
     },
 
     // A category of the user's own, e.g. "paghetta" → "Paghetta". Returns the stored name.
@@ -242,12 +258,12 @@ export function openDb(file) {
     addTransfer(input) {
       return tx(() => {
         const amount = cents(input.amount_cents, 'Importo');
-        const from = account(input.account_id).id;
-        const to = account(input.to_account_id).id;
-        if (from === to) fail('INVALID', 'Scegli due conti diversi.');
-        requireFunds(from, amount);
-        return insertTx({ kind: 'transfer', amount_cents: amount, account_id: from, to_account_id: to,
-          date: isoDate(input.date, 'Data'), note: text(input.note, 'Nota', { max: 1000 }) });
+        const from = account(input.account_id);
+        const to = account(input.to_account_id);
+        if (from.id === to.id) fail('INVALID', 'Scegli due conti diversi.');
+        requireFunds(from.id, amount);
+        return insertTx({ kind: 'transfer', amount_cents: amount, account_id: from.id, to_account_id: to.id,
+          date: sinceOpening(pastDate(input.date, 'Data'), from, to), note: text(input.note, 'Nota', { max: 1000 }) });
       });
     },
 
@@ -281,7 +297,9 @@ export function openDb(file) {
 
 function migrate(db, file) {
   const version = db.prepare('PRAGMA user_version').get().user_version;
-  if (version >= MIGRATIONS.length) return;
+  // A newer build wrote this file; writing to a schema we don't know could damage it.
+  if (version > MIGRATIONS.length) throw new Error('Questo database è stato creato da una versione più recente di Margine. Aggiorna l\'app per aprirlo.');
+  if (version === MIGRATIONS.length) return;
   if (version > 0 && file !== ':memory:') { // keep a copy before changing a real user's data
     db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); // flush WAL so the copy is complete
     fs.copyFileSync(file, `${file}.bak-v${version}`);

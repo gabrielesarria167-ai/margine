@@ -10,7 +10,7 @@ Phase 1 (this version): dashboard, cash and bank accounts, expenses and income, 
 npm install
 npm start        # dev app
 npm test         # ledger and database rules
-npm run dist     # macOS universal .dmg in dist/
+npm run dist     # macOS .dmg (Apple Silicon only) in dist/
 npm run dist:win # Windows installer (unsigned)
 ```
 

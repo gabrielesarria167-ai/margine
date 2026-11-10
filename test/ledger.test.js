@@ -23,7 +23,7 @@ test('dropping under a reached goal is a deficit', () => {
 });
 
 test('no goal means everything is spendable', () => {
-  assert.deepEqual(totals(12345, null), { P: 12345, S: 0, O: 0, D: 12345, F: 0, status: 'covered' });
+  assert.deepEqual(totals(12345, null), { P: 12345, S: 0, D: 12345, F: 0, status: 'covered' });
 });
 
 test('overflow is the part beyond spendable', () => {

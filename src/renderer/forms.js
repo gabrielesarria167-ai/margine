@@ -1,12 +1,12 @@
 // Every action opens in one side sheet (a modal <dialog>) under the fascia, so the band stays visible and
 // previews the effect of what is being typed. The main process re-validates everything on save.
 import {
-  formatEuro, parseEuro, totals, overflow, todayISO,
+  formatEuro, signedEuro, parseEuro, totals, draftGoal, overflow, todayISO,
   EXPENSE_CATEGORIES, INCOME_CATEGORIES, ACCOUNT_KINDS, EXCEPTION_TYPES,
 } from '../ledger.js';
 import { html } from './html.js';
 import { icon } from './icons.js';
-import { store, call, refresh, toast, fmtDayYear } from './store.js';
+import { store, call, refresh, toast, fmtDayYear, movimenti } from './store.js';
 import { renderFascia, previewSpend } from './fascia.js';
 
 const dlg = document.getElementById('sheet');
@@ -26,16 +26,16 @@ const money = (name, label, { value = '', large = false, hint = '' } = {}) => ht
     <span class="money ${large ? 'money--lg' : ''}"><input class="input" id="f-${name}" name="${name}" inputmode="decimal" autocomplete="off" value="${value}" aria-describedby="e-${name} ${hint ? `h-${name}` : ''}"></span>
     ${errorSlot(name)}
   </div>`;
-const text = (name, label, value = '') => html`
-  <div class="field"><label for="f-${name}">${label}</label><input class="input" id="f-${name}" name="${name}" value="${value}" maxlength="200" autocomplete="off" aria-describedby="e-${name}">${errorSlot(name)}</div>`;
+const text = (name, label, value = '', max = 200) => html`
+  <div class="field"><label for="f-${name}">${label}</label><input class="input" id="f-${name}" name="${name}" value="${value}" maxlength="${max}" autocomplete="off" aria-describedby="e-${name}">${errorSlot(name)}</div>`;
 const area = (name, label, value = '') => html`
   <div class="field"><label for="f-${name}">${label}</label><textarea class="textarea" id="f-${name}" name="${name}" maxlength="1000" aria-describedby="e-${name}">${value}</textarea>${errorSlot(name)}</div>`;
 const select = (name, label, options, selected) => html`
   <div class="field"><label for="f-${name}">${label}</label><select class="select" id="f-${name}" name="${name}" aria-describedby="e-${name}">
     ${options.map(([v, l]) => html`<option value="${v}" ${String(v) === String(selected) ? 'selected' : ''}>${l}</option>`)}
   </select>${errorSlot(name)}</div>`;
-const date = (name, label, value = todayISO()) => html`
-  <div class="field"><label for="f-${name}">${label}</label><input class="input" type="date" id="f-${name}" name="${name}" value="${value}" aria-describedby="e-${name}">${errorSlot(name)}</div>`;
+const date = (name, label, value = todayISO(), max = todayISO()) => html`
+  <div class="field"><label for="f-${name}">${label}</label><input class="input" type="date" id="f-${name}" name="${name}" value="${value}" max="${max}" aria-describedby="e-${name}">${errorSlot(name)}</div>`;
 
 // Categories as pills (radio buttons) plus "Aggiungi la tua", which saves a new one and selects it.
 const categoryPills = (kind, selected) => html`${store.state.categories[kind].map((c) => html`
@@ -90,14 +90,13 @@ function wireCategories(form, kind) {
   box.querySelector('[data-cat-cancel]').onclick = () => show(false);
   addBtn.onclick = add;
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); add(); } // never submit the whole form from here
+    if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); } // never submit the whole form; click() is ignored while a save runs
     if (e.key === 'Escape') { e.preventDefault(); show(false); }
   });
 }
 
 const accountOptions = () => store.state.accounts.map((a) => [a.id, `${a.name} · ${formatEuro(a.balance_cents)}`]);
 const accountById = (id) => store.state.accounts.find((a) => a.id === Number(id));
-const signed = (c) => `${c > 0 ? '+' : c < 0 ? '−' : ''}${formatEuro(Math.abs(c))}`;
 
 // ---------- sheet plumbing ----------
 
@@ -145,14 +144,19 @@ const read = (form, draft) => {
   }
 };
 
-// Runs a save; on failure shows the message in the sheet and returns the error.
-async function save(form, fn) {
+// Every sheet's submit: no page reload, old errors cleared, then the form's own checks and save.
+const onSubmit = (form, fn) => form.addEventListener('submit', (e) => { e.preventDefault(); clearErrors(form); fn(); });
+
+// Runs a save. On success closes the sheet with `message`; on failure shows the error in the sheet and returns it.
+async function save(form, fn, message) {
   const button = form.querySelector('[type=submit]');
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
-  try { await fn(); return null; }
+  try { await fn(); }
   catch (err) { formError(form, err.message); return err; }
   finally { button.disabled = false; button.removeAttribute('aria-busy'); }
+  await done(message);
+  return null;
 }
 async function done(message) {
   dlg.close();
@@ -206,9 +210,7 @@ function expenseForm() {
       button.className = `btn ${o ? 'btn--signal' : 'btn--primary'}`;
     };
     form.addEventListener('input', update);
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearErrors(form);
+    onSubmit(form, async () => {
       read(form, draft);
       const acc = accountById(draft.account_id);
       const errors = [];
@@ -218,9 +220,8 @@ function expenseForm() {
       if (!draft.date) errors.push(['date', 'Scegli la data della spesa.']);
       if (errors.length) return showErrors(form, errors);
       if (over()) return exception();
-      const err = await save(form, () => call('addExpense', payload()));
-      if (!err) done('Spesa registrata.');
-      else if (err.code === 'EXCEPTION_REQUIRED') exception();
+      const err = await save(form, () => call('addExpense', payload()), 'Spesa registrata.');
+      if (err?.code === 'EXCEPTION_REQUIRED') exception();
     });
     update();
     if (message) formError(form, message);
@@ -233,7 +234,7 @@ function expenseForm() {
       body: html`
         <div class="warning">${icon('alert')}<div>
           <p><strong>${formatEuro(A())}</strong> di spesa, di cui <strong>${formatEuro(over())}</strong> oltre lo spendibile.</p>
-          <p>Questa parte verrà presa dal risparmio protetto. L'obiettivo resta ${formatEuro(s.totals.O)}: non viene ridotto per far sembrare la spesa ordinaria.</p>
+          <p>Questa parte verrà presa dal risparmio protetto. L'obiettivo resta ${formatEuro(s.totals.S)}: non viene ridotto per far sembrare la spesa ordinaria.</p>
         </div></div>
         <fieldset class="choice">
           <legend>Perché usi il risparmio?</legend>
@@ -243,7 +244,7 @@ function expenseForm() {
         <div class="recover-fields" ${draft.type === 'recover' ? '' : 'hidden'}>
           ${money('expected', 'Importo da recuperare', { value: draft.expected })}
           ${text('source', 'Da chi lo recuperi', draft.source)}
-          ${date('due', 'Data prevista di recupero', draft.due)}
+          ${date('due', 'Data prevista di recupero', draft.due, '')}
         </div>
         ${area('reason', 'Motivazione', draft.reason)}`,
       foot: footer('Rivedi', { cls: 'btn--signal', back: 'Indietro' }),
@@ -251,9 +252,7 @@ function expenseForm() {
     const recoverFields = form.querySelector('.recover-fields');
     form.addEventListener('change', () => { read(form, draft); recoverFields.hidden = draft.type !== 'recover'; });
     form.querySelector('[data-back]').onclick = () => { read(form, draft); details(); };
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      clearErrors(form);
+    onSubmit(form, () => {
       read(form, draft);
       const errors = [];
       if (draft.type === 'recover') {
@@ -289,14 +288,12 @@ function expenseForm() {
     });
     form.querySelector('[data-back]').onclick = () => exception();
     form.querySelector('[type=submit]').focus();
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    onSubmit(form, async () => {
       const ex = recover
         ? { type: 'recover', reason: draft.reason, expected_recovery_cents: parseEuro(draft.expected), recovery_source: draft.source, recovery_due: draft.due }
         : { type: 'emergency', reason: draft.reason };
-      const err = await save(form, () => call('addExpense', payload(ex)));
-      if (!err) done('Eccezione registrata.');
-      else if (err.code === 'INVALID' && !over()) details(err.message);
+      const err = await save(form, () => call('addExpense', payload(ex)), 'Eccezione registrata.');
+      if (err?.code === 'INVALID' && !over()) details(err.message);
     });
   }
 
@@ -333,20 +330,17 @@ function incomeForm() {
         : html`Lo spendibile salirà a <strong>${formatEuro(t.D)}</strong>. L'obiettivo non cambia.`);
   };
   form.addEventListener('input', update);
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearErrors(form);
+  onSubmit(form, () => {
     const amount = parseEuro(form.amount.value);
     const errors = [];
     if (!amount) errors.push(['amount', 'Inserisci un importo maggiore di zero, per esempio 250.']);
     if (!form.description.value.trim()) errors.push(['description', 'Scrivi da chi o da cosa arriva il denaro.']);
     if (!form.date.value) errors.push(['date', 'Scegli la data di ricezione.']);
     if (errors.length) return showErrors(form, errors);
-    const err = await save(form, () => call('addIncome', {
+    save(form, () => call('addIncome', {
       amount_cents: amount, description: form.description.value, account_id: Number(form.account_id.value),
       category: form.category.value, date: form.date.value, note: form.note.value,
-    }));
-    if (!err) done('Entrata registrata.');
+    }), 'Entrata registrata.');
   });
   update();
 }
@@ -387,9 +381,7 @@ function transferForm() {
       : html`Un trasferimento non è né un'entrata né una spesa: cambia solo dove si trova il denaro.`);
   };
   form.addEventListener('input', update);
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearErrors(form);
+  onSubmit(form, () => {
     const amount = parseEuro(form.amount.value);
     const a = accountById(form.account_id.value), b = accountById(form.to_account_id.value);
     const errors = [];
@@ -398,10 +390,9 @@ function transferForm() {
     if (a.id === b.id) errors.push(['to_account_id', 'Scegli due conti diversi.']);
     if (!form.date.value) errors.push(['date', 'Scegli una data.']);
     if (errors.length) return showErrors(form, errors);
-    const err = await save(form, () => call('addTransfer', {
+    save(form, () => call('addTransfer', {
       amount_cents: amount, account_id: a.id, to_account_id: b.id, date: form.date.value, note: form.note.value,
-    }));
-    if (!err) done('Trasferimento registrato.');
+    }), 'Trasferimento registrato.');
   });
   update();
 }
@@ -413,7 +404,7 @@ function goalForm() {
   const form = sheet({
     title: 'Nuovo obiettivo di risparmio',
     body: html`
-      ${money('amount', 'Obiettivo', { large: true, hint: `Attuale: ${formatEuro(s.totals.O)}. Può superare il patrimonio di oggi.` })}
+      ${money('amount', 'Obiettivo', { large: true, hint: `Attuale: ${formatEuro(s.totals.S)}. Può superare il patrimonio di oggi.` })}
       <p class="verdict" aria-live="polite"></p>
       ${area('note', 'Nota (facoltativa)')}`,
     foot: footer('Fissa obiettivo'),
@@ -422,7 +413,7 @@ function goalForm() {
   const update = () => {
     const goal = parseEuro(form.amount.value);
     if (goal == null) { renderFascia(s.totals); verdict.textContent = 'Scrivi quanto vuoi tenere da parte.'; return; }
-    const t = totals(s.totals.P, goal ? { amount_cents: goal, reached_at: s.totals.P >= goal ? 'now' : null } : null);
+    const t = totals(s.totals.P, draftGoal(s.totals.P, goal));
     renderFascia(t);
     verdict.innerHTML = String(!goal
       ? html`Senza obiettivo tutto il patrimonio diventa spendibile: <strong>${formatEuro(t.D)}</strong>.`
@@ -431,13 +422,10 @@ function goalForm() {
         : html`Resteranno spendibili <strong>${formatEuro(t.D)}</strong>.`);
   };
   form.addEventListener('input', update);
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearErrors(form);
+  onSubmit(form, () => {
     const goal = parseEuro(form.amount.value);
     if (goal == null) return showErrors(form, [['amount', 'Scrivi un importo in euro, anche 0 per non proteggere nulla.']]);
-    const err = await save(form, () => call('setGoal', { amount_cents: goal, note: form.note.value }));
-    if (!err) done('Obiettivo aggiornato.');
+    save(form, () => call('setGoal', { amount_cents: goal, note: form.note.value }), 'Obiettivo aggiornato.');
   });
   update();
 }
@@ -469,19 +457,17 @@ function checkForm() {
     verdict.innerHTML = String(diff == null
       ? html`Saldo registrato su ${acc.name}: <strong>${formatEuro(acc.balance_cents)}</strong>.`
       : diff
-        ? html`Registrato ${formatEuro(acc.balance_cents)}: differenza di <strong>${signed(diff)}</strong>. Verrà registrata una rettifica, i movimenti passati non cambiano.`
+        ? html`Registrato ${formatEuro(acc.balance_cents)}: differenza di <strong>${signedEuro(diff)}</strong>. Verrà registrata una rettifica, i movimenti passati non cambiano.`
         : html`Corrisponde al saldo registrato. Verrà annotato solo il controllo.`);
   };
   form.addEventListener('input', update);
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearErrors(form);
+  onSubmit(form, () => {
     const counted = parseEuro(form.counted.value);
     if (counted == null) return showErrors(form, [['counted', 'Scrivi il saldo che hai verificato, anche 0.']]);
     const diff = diffNow();
     if (diff && !form.reason.value.trim()) return showErrors(form, [['reason', 'Spiega da cosa nasce la differenza.']]);
-    const err = await save(form, () => call('checkBalance', { account_id: Number(form.account_id.value), counted_cents: counted, reason: form.reason.value }));
-    if (!err) done(diff ? 'Rettifica registrata.' : 'Controllo registrato.');
+    save(form, () => call('checkBalance', { account_id: Number(form.account_id.value), counted_cents: counted, reason: form.reason.value }),
+      diff ? 'Rettifica registrata.' : 'Controllo registrato.');
   });
   update();
 }
@@ -493,7 +479,7 @@ function accountForm() {
     title: 'Nuovo conto',
     body: html`
       ${select('kind', 'Tipo', Object.entries(ACCOUNT_KINDS), 'digital')}
-      <div class="name-field">${text('name', 'Nome', ACCOUNT_KINDS.digital)}</div>
+      <div class="name-field">${text('name', 'Nome', ACCOUNT_KINDS.digital, 60)}</div>
       ${money('opening', 'Saldo attuale', { hint: 'Verrà registrato come saldo iniziale.' })}`,
     foot: footer('Aggiungi conto'),
   });
@@ -501,16 +487,13 @@ function accountForm() {
   const nameField = form.querySelector('.name-field');
   const named = () => form.kind.value === 'digital';
   form.kind.addEventListener('change', () => { nameField.hidden = !named(); });
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearErrors(form);
+  onSubmit(form, () => {
     const opening = form.opening.value.trim() ? parseEuro(form.opening.value) : 0;
     const errors = [];
     if (named() && !form.name.value.trim()) errors.push(['name', 'Dai un nome al conto.']);
     if (opening == null) errors.push(['opening', 'Scrivi un importo in euro, per esempio 120,50.']);
     if (errors.length) return showErrors(form, errors);
-    const err = await save(form, () => call('createAccount', { kind: form.kind.value, name: named() ? form.name.value : ACCOUNT_KINDS[form.kind.value], opening_cents: opening }));
-    if (!err) done('Conto aggiunto.');
+    save(form, () => call('createAccount', { kind: form.kind.value, name: named() ? form.name.value : ACCOUNT_KINDS[form.kind.value], opening_cents: opening }), 'Conto aggiunto.');
   });
 }
 
@@ -524,7 +507,6 @@ function categoriesForm() {
   function render(focus) {
     const s = store.state;
     const uses = (kind, name) => s.transactions.filter((t) => t.kind === kind && t.category === name).length;
-    const movimenti = (n) => `${n} ${n === 1 ? 'movimento' : 'movimenti'}`;
     const row = (kind, name) => {
       const n = uses(kind, name);
       if (ui.mode === 'rename' && at(kind, name)) {

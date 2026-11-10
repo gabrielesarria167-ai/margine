@@ -1,3 +1,5 @@
+import { signedAmount } from './ledger.js';
+
 // Figures for the dashboard's all-time section. Amounts in cents, dates 'YYYY-MM-DD'.
 const DAY = 86400000;
 const utc = (iso) => { const [y, m, d] = iso.split('-').map(Number); return Date.UTC(y, m - 1, d); };
@@ -7,7 +9,7 @@ export function dailyBalance(transactions, today) {
   const delta = new Map();
   for (const t of transactions) {
     if (t.kind === 'transfer') continue;
-    delta.set(t.date, (delta.get(t.date) ?? 0) + (t.kind === 'expense' ? -t.amount_cents : t.amount_cents));
+    delta.set(t.date, (delta.get(t.date) ?? 0) + signedAmount(t));
   }
   if (!delta.size) return [];
   const days = [...delta.keys()].map(utc);

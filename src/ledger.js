@@ -8,6 +8,7 @@ export const EXCEPTION_TYPES = { recover: 'Recupererò il denaro', emergency: 'E
 
 const euro = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: 'always' });
 export const formatEuro = (cents) => euro.format(cents / 100);
+export const signedEuro = (c) => `${c > 0 ? '+' : c < 0 ? '−' : ''}${formatEuro(Math.abs(c))}`;
 
 // Accepts "12,50", "1.000,50", "12.5", "1000", "€ 12". Returns cents, or null when not a valid non-negative amount.
 export function parseEuro(input) {
@@ -21,28 +22,34 @@ export function parseEuro(input) {
   return Number.isSafeInteger(cents) ? cents : null;
 }
 
+// What a movement adds to patrimonio. Not for transfers: they only move money between accounts.
+export const signedAmount = (t) => (t.kind === 'expense' ? -t.amount_cents : t.amount_cents);
+
 // Balance per account id from transaction rows. Transfers move money and never change the total.
 export function accountBalances(transactions) {
   const b = new Map();
   const add = (id, v) => b.set(id, (b.get(id) ?? 0) + v);
   for (const t of transactions) {
-    if (t.kind === 'income' || t.kind === 'adjustment') add(t.account_id, t.amount_cents);
-    else if (t.kind === 'expense') add(t.account_id, -t.amount_cents);
-    else if (t.kind === 'transfer') { add(t.account_id, -t.amount_cents); add(t.to_account_id, t.amount_cents); }
+    if (t.kind === 'transfer') { add(t.account_id, -t.amount_cents); add(t.to_account_id, t.amount_cents); }
+    else add(t.account_id, signedAmount(t));
   }
   return b;
 }
 
-// P = patrimonio, goal = { amount_cents, reached_at } | null. Phase 1 has one goal, so S = O.
+// P = patrimonio, goal = { amount_cents, reached_at } | null. Phase 1 has one goal, so protected S is the goal.
 export function totals(P, goal) {
   const S = goal?.amount_cents ?? 0;
   const D = Math.max(0, P - S);
   const F = Math.max(0, S - P);
   const status = F === 0 ? 'covered' : goal?.reached_at ? 'deficit' : 'building';
-  return { P, S, O: S, D, F, status };
+  return { P, S, D, F, status };
 }
+
+// A goal still being typed, for previews: reached if P already covers it.
+export const draftGoal = (P, cents) => (cents ? { amount_cents: cents, reached_at: P >= cents ? 'now' : null } : null);
 
 // How much of an expense would come out of protected savings.
 export const overflow = (amount, D) => Math.max(0, amount - D);
 
-export const todayISO = () => new Date().toLocaleDateString('sv-SE'); // YYYY-MM-DD, local time
+export const localISO = (d = new Date()) => new Date(d).toLocaleDateString('sv-SE'); // YYYY-MM-DD, local time
+export const todayISO = () => localISO();

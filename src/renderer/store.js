@@ -31,10 +31,16 @@ const dayYearFmt = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'sh
 const stampFmt = new Intl.DateTimeFormat('it-IT', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
 // 'YYYY-MM-DD' is a local calendar day; new Date('YYYY-MM-DD') would read it as UTC midnight.
-const localDay = (iso) => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+// Full timestamps (set_at, reached_at) are UTC instants, so new Date() puts them on the right local day.
+const localDay = (iso) => {
+  if (iso.length > 10) return new Date(iso);
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
 export const fmtDay = (iso) => {
   const d = localDay(iso);
   return (d.getFullYear() === new Date().getFullYear() ? dayFmt : dayYearFmt).format(d);
 };
 export const fmtDayYear = (iso) => dayYearFmt.format(localDay(iso));
 export const fmtStamp = (ts) => stampFmt.format(new Date(ts));
+export const movimenti = (n) => `${n} ${n === 1 ? 'movimento' : 'movimenti'}`;
